@@ -56,22 +56,22 @@ fi
 echo "eula=true" > eula.txt
 
 if [ ! -f server.properties ] || [ "$OVERRIDE_SERVER_PROPERTIES" = "true" ]; then
-    cat > server.properties <<EOF
-        motd=${MOTD}
-        difficulty=${DIFFICULTY}
-        gamemode=${MODE}
-        enable-command-block=${ENABLE_COMMAND_BLOCK}
-        spawn-protection=${SPAWN_PROTECTION}
-        max-players=${MAX_PLAYERS}
-        allow-nether=${ALLOW_NETHER}
-        online-mode=${ONLINE_MODE}
-        pvp=${PVP}
-        view-distance=${VIEW_DISTANCE}
-        enable-rcon=${ENABLE_RCON}
-        rcon.password=${RCON_PASSWORD}
-        server-port=25565
-        rcon.port=25575
-    EOF
+cat > server.properties <<EOF
+motd=${MOTD}
+difficulty=${DIFFICULTY}
+gamemode=${MODE}
+enable-command-block=${ENABLE_COMMAND_BLOCK}
+spawn-protection=${SPAWN_PROTECTION}
+max-players=${MAX_PLAYERS}
+allow-nether=${ALLOW_NETHER}
+online-mode=${ONLINE_MODE}
+pvp=${PVP}
+view-distance=${VIEW_DISTANCE}
+enable-rcon=${ENABLE_RCON}
+rcon.password=${RCON_PASSWORD}
+server-port=25565
+rcon.port=25575
+EOF
 fi
 
 if [ -f start.sh ]; then
