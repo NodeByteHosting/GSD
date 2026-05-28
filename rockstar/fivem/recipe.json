@@ -1,0 +1,120 @@
+{
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-05-28T00:00:00+00:00",
+    "name": "FiveM",
+    "author": "NodeByteHosting",
+    "description": "FiveM server with txAdmin.",
+    "features": [
+        "eula",
+        "role_editor"
+    ],
+    "docker_images": {
+        "ghcr.io\/nodebytehosting\/games:fivem": "ghcr.io\/nodebytehosting\/games:fivem"
+    },
+    "file_denylist": [],
+    "startup": "bash start.sh",
+    "config": {
+        "files": "{}",
+        "startup": "{\n  \"done\": \"The server is ready to accept connections\"\n}",
+        "log": "{\n  \"custom\": false,\n  \"location\": \"txData/logs/latest.log\"\n}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": "#!/bin/bash\nset -e\n\necho \"Downloading FiveM Server...\"\nmkdir -p /home/container/alpine\ncd /home/container/alpine\n\n# Download the latest FiveM server build\nDOWNLOAD_URL=$(curl -sSL https://changelogs-live.fivem.net/api/changelog/versions/linux/server | jq -r '.latest_download')\n\nif [ -z \"$DOWNLOAD_URL\" ] || [ \"$DOWNLOAD_URL\" = \"null\" ]; then\n    echo \"Failed to get download URL\"\n    exit 1\nfi\n\ncurl -sSL \"$DOWNLOAD_URL\" -o server.tar.gz\ntar -xzf server.tar.gz\nrm -f server.tar.gz run.sh\n\necho \"FiveM Server downloaded successfully!\"\necho \"\"\necho \"Next steps:\"\necho \"1. Set FIVEM_LICENSE environment variable with your server key from https://portal.cfx.re/\"\necho \"2. Configure txAdmin port (default: 40120) and server port (default: 30120)\"\necho \"3. Start the server!\"\n"
+    },
+    "variables": [
+        {
+            "name": "FiveM License Key",
+            "description": "Your FiveM server license key from https://portal.cfx.re/",
+            "env_variable": "FIVEM_LICENSE",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": true,
+            "rules": "nullable|string|max:128",
+            "field_type": "text"
+        },
+        {
+            "name": "Auto Update",
+            "description": "Automatically download and update FiveM server binaries on startup",
+            "env_variable": "AUTO_UPDATE",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|in:0,1",
+            "field_type": "text"
+        },
+        {
+            "name": "txAdmin Port",
+            "description": "Port for txAdmin web panel (cannot be 30120)",
+            "env_variable": "TXADMIN_PORT",
+            "default_value": "40120",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|min:1024|max:65535",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Port",
+            "description": "Port for FiveM server (cannot be 40120)",
+            "env_variable": "SERVER_PORT",
+            "default_value": "30120",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|min:1024|max:65535",
+            "field_type": "text"
+        },
+        {
+            "name": "Maximum Players",
+            "description": "Maximum number of players allowed on server (enforced by txAdmin)",
+            "env_variable": "MAX_PLAYERS",
+            "default_value": "32",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|min:1|max:1024",
+            "field_type": "text"
+        },
+        {
+            "name": "txAdmin Enable",
+            "description": "Enable txAdmin web panel (recommended: enabled)",
+            "env_variable": "TXADMIN_ENABLE",
+            "default_value": "1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|in:0,1",
+            "field_type": "text"
+        },
+        {
+            "name": "Provider Name",
+            "description": "Your hosting provider name (2-16 chars, shown in txAdmin warnings)",
+            "env_variable": "PROVIDER_NAME",
+            "default_value": "Game Recipes",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|min:2|max:16",
+            "field_type": "text"
+        },
+        {
+            "name": "Provider Logo URL",
+            "description": "Provider logo URL for txAdmin login page (224x96px max). Use {theme} for dark/light: https://example.com/logo_{theme}.png",
+            "env_variable": "PROVIDER_LOGO",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|url",
+            "field_type": "text"
+        },
+        {
+            "name": "Quiet Mode",
+            "description": "Hide FXServer console output from txAdmin (recommended for GSPs)",
+            "env_variable": "TXHOST_QUIET_MODE",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|in:true,false",
+            "field_type": "text"
+        }
+    ]
+}

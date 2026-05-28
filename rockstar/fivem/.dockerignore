@@ -1,0 +1,60 @@
+# .dockerignore - Exclude unnecessary files from Docker build context
+# This reduces build context size and speeds up builds
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+README.md
+LICENSE
+CHANGELOG.md
+DEPLOYMENT.md
+GHCR-PUBLISHING.md
+
+# GitHub
+.github
+.gitpod.yml
+.editorconfig
+
+# Build artifacts
+Dockerfile.bak
+*.tar
+*.tar.gz
+*.zip
+.dockerignore
+
+# Local files
+.env
+.env.local
+*.log
+.DS_Store
+Thumbs.db
+
+# Development
+node_modules
+__pycache__
+*.pyc
+.pytest_cache
+.venv
+venv/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# CI/CD
+.github/
+.circleci/
+.travis.yml
+appveyor.yml
+
+# Container related
+.container
+container/
+txData/
