@@ -1,17 +1,48 @@
 #!/bin/bash
 
+set -e
+
+PROJECT="paper"
+VERSION="${VERSION:-LATEST}"
+USER_AGENT="nodebyte-minecraft/1.0 (support@nodebyte.host)"
+
 echo "Installing Paper..."
 
+# 1. Resolve latest Minecraft version if needed
 if [ "$VERSION" = "LATEST" ]; then
-  VERSION=$(curl -s https://api.papermc.io/v2/projects/paper \
+  VERSION=$(curl -s -H "User-Agent: $USER_AGENT" \
+    https://fill.papermc.io/v3/projects/${PROJECT}/versions \
     | jq -r '.versions[-1]')
 fi
 
-BUILD=$(curl -s \
-  https://api.papermc.io/v2/projects/paper/versions/${VERSION} \
-  | jq '.builds[-1]')
+echo "Target MC version: $VERSION"
 
-FILE="paper-${VERSION}-${BUILD}.jar"
+# 2. Get latest stable build list
+BUILDS_JSON=$(curl -s -H "User-Agent: $USER_AGENT" \
+  "https://fill.papermc.io/v3/projects/${PROJECT}/versions/${VERSION}/builds")
 
-curl -L -o server.jar \
-  https://api.papermc.io/v2/projects/paper/versions/${VERSION}/builds/${BUILD}/downloads/${FILE}
+# 3. Extract latest STABLE build ID
+BUILD=$(echo "$BUILDS_JSON" \
+  | jq -r 'map(select(.channel == "STABLE")) | .[-1].id')
+
+if [ -z "$BUILD" ] || [ "$BUILD" = "null" ]; then
+  echo "No stable build found for $VERSION"
+  exit 1
+fi
+
+echo "Selected build: $BUILD"
+
+# 4. Get file info
+FILE=$(echo "$BUILDS_JSON" \
+  | jq -r --arg id "$BUILD" '.[] | select(.id == ($id | tonumber)) | .downloads.application.name')
+
+DOWNLOAD_URL=$(echo "$BUILDS_JSON" \
+  | jq -r --arg id "$BUILD" '.[] | select(.id == ($id | tonumber)) | .downloads.application.url')
+
+# 5. Download server jar
+echo "Downloading: $FILE"
+
+curl -L -H "User-Agent: $USER_AGENT" \
+  -o server.jar "$DOWNLOAD_URL"
+
+echo "Paper installed successfully."
