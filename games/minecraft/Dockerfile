@@ -21,7 +21,7 @@ WORKDIR /app
 COPY entrypoint.sh /app/entrypoint.sh
 COPY installers /app/installers
 
-RUN chmod +x /entrypoint.sh && \
+RUN chmod +x /app/entrypoint.sh && \
     chmod +x /app/installers/*.sh
 
 EXPOSE 25565 25575
