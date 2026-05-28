@@ -28,4 +28,4 @@ EXPOSE 25565 25575
 
 VOLUME ["data"]
 
-ENTRYPOINT [ "/entrypoint.sh" ]
+ENTRYPOINT [ "/app/entrypoint.sh" ]
