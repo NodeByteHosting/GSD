@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - master
+      - dev
+      - develop
     paths:
       - 'rockstar/fivem/**'
       - '.github/workflows/build-fivem.yml'
@@ -50,8 +52,11 @@ jobs:
             type=semver,pattern={{version}},prefix=fivem-
             type=semver,pattern={{major}}.{{minor}},prefix=fivem-
             type=sha,prefix=fivem-
-            type=raw,value=fivem
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=fivem-dev,enable={{is_default_branch}},branch=dev
+            type=raw,value=fivem-dev,enable={{is_default_branch}},branch=develop
+            type=raw,value=fivem,enable={{is_default_branch}},branch=main
+            type=raw,value=fivem,enable={{is_default_branch}},branch=master
+            type=raw,value=latest,enable={{is_default_branch}},branch=main
 
       - name: Build and push FiveM image
         uses: docker/build-push-action@v5
