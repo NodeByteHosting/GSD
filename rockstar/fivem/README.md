@@ -21,7 +21,7 @@ docker run -it \
   -e MAX_PLAYERS=32 \
   -p 40120:40120/tcp \
   -p 30120:30120/udp \
-  ghcr.io/nodebytehosting/games:fivem
+  ghcr.io/nodebyte/games:fivem
 ```
 
 ### Build Locally

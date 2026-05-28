@@ -8,7 +8,7 @@
 
 FROM alpine:3.20
 
-LABEL maintainer="NodeByteHosting" \
+LABEL maintainer="NodeByte LTD" \
       description="FiveM server with txAdmin support" \
       version="1.0"
 

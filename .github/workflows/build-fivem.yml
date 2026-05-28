@@ -19,7 +19,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: nodebytehosting/games
+  IMAGE_NAME: nodebyte/games
 
 jobs:
   build-and-push:

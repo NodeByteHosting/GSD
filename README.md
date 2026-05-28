@@ -25,8 +25,8 @@ Each recipe directory contains:
 
 | Game | Image | Status |
 |------|-------|--------|
-| FiveM | `ghcr.io/nodebytehosting/games:fivem` | ✅ Available |
-| RedM | `ghcr.io/nodebytehosting/games:redm` | 🔄 Coming soon |
+| FiveM | `ghcr.io/nodebyte/games:fivem` | ✅ Available |
+| RedM | `ghcr.io/nodebyte/games:redm` | 🔄 Coming soon |
 
 ## Build & Publish
 
@@ -56,8 +56,8 @@ const image = 'ghcr.io/nodebytehosting/games:fivem';
 ### Docker
 
 ```bash
-docker pull ghcr.io/nodebytehosting/games:fivem
-docker run -e FIVEM_LICENSE=your_key -p 30120:30120/udp ghcr.io/nodebytehosting/games:fivem
+docker pull ghcr.io/nodebyte/games:fivem
+docker run -e FIVEM_LICENSE=your_key -p 30120:30120/udp ghcr.io/nodebyte/games:fivem
 ```
 
 ## Adding a New Recipe
