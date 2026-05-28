@@ -1,70 +1,123 @@
 # Game Recipes
 
-Docker recipes for game servers. Built for Pterodactyl panels and our own GSM.
+Docker recipes for game servers. Built for Pterodactyl panels and custom game server manager.
 
 ## Structure
 
+Recipes are organized by game franchise/publisher:
+
 ```
-rockstar/
-  fivem/       - FiveM server with txAdmin
-  redm/        - RedM server (coming soon)
+rockstar/           - Rockstar Games
+  fivem/            - GTA V multiplayer (FiveM)
+  redm/             - Red Dead Redemption 2 multiplayer (RedM)
 ```
 
-Each recipe includes:
-- `Dockerfile` - Container image
-- `recipe.json` - Pterodactyl egg definition
-- `start.sh` - Startup script
-- `README.md` - Usage docs
+## Recipe Format
+
+Each recipe directory contains:
+- `Dockerfile` - Container image definition
+- `recipe.json` - Pterodactyl egg configuration
+- `start.sh` - Server startup script
+- `server.cfg` - Default server configuration template
+- `README.md` - Usage and setup instructions
 
 ## Available Recipes
 
-### FiveM
+| Game | Image | Status |
+|------|-------|--------|
+| FiveM | `ghcr.io/nodebytehosting/games:fivem` | ✅ Available |
+| RedM | `ghcr.io/nodebytehosting/games:redm` | 🔄 Coming soon |
 
-GTA V multiplayer framework. Full txAdmin integration.
+## Build & Publish
 
-**Image:** `ghcr.io/nodebytehosting/games:fivem`
+Images automatically build and push to ghcr.io:
+
+- **main** → `latest` + game-specific tag (e.g., `fivem`)
+- **dev** → `game-dev` tag (e.g., `fivem-dev`)
+- **tags** → semver tags (e.g., `fivem-v1.0.0`)
+
+## Usage
+
+### Pterodactyl
+
+1. Import `recipe.json` as an egg
+2. Create server with the egg
+3. Configure environment variables in panel
+
+### Custom Panels
+
+Load the recipe and Docker image:
+
+```javascript
+const recipe = await fetch('https://raw.githubusercontent.com/nodebytehosting/game-recipes/main/rockstar/fivem/recipe.json').then(r => r.json());
+const image = 'ghcr.io/nodebytehosting/games:fivem';
+```
+
+### Docker
 
 ```bash
 docker pull ghcr.io/nodebytehosting/games:fivem
+docker run -e FIVEM_LICENSE=your_key -p 30120:30120/udp ghcr.io/nodebytehosting/games:fivem
 ```
 
-See [rockstar/fivem/README.md](rockstar/fivem/README.md) for usage.
+## Adding a New Recipe
 
-## Building
+1. **Create directory structure:**
+   ```bash
+   mkdir -p PUBLISHER/GAME_NAME
+   ```
 
-Images are automatically built and pushed to ghcr.io when changes are committed:
+2. **Add required files:**
+   - `Dockerfile` - Base image, dependencies, labels
+   - `recipe.json` - Environment variables, server config
+   - `start.sh` - Startup logic
+   - `server.cfg` - Template configuration
+   - `README.md` - Setup instructions
 
-```
-push to main/master → GitHub Actions builds → ghcr.io/nodebytehosting/games:fivem
-```
+3. **Create GitHub Actions workflow:**
+   ```bash
+   cp .github/workflows/build-fivem.yml .github/workflows/build-GAME.yml
+   ```
+   Update image name and paths in the workflow.
 
-### Manual Build
+4. **Push to trigger build:**
+   - Create pull request or push to `develop`
+   - GitHub Actions builds image as `GAME-dev`
+   - Test and merge to `main` for release
 
-```bash
-docker build -t ghcr.io/nodebytehosting/games:fivem rockstar/fivem/
-docker push ghcr.io/nodebytehosting/games:fivem
-```
+## Recipe Checklist
 
-Requires authentication:
-```bash
-docker login ghcr.io
-```
+- [ ] `Dockerfile` with proper labels and base image
+- [ ] `recipe.json` with environment variables and metadata
+- [ ] `start.sh` with configuration validation
+- [ ] `server.cfg` template with comments
+- [ ] `README.md` with quick-start examples
+- [ ] GitHub Actions workflow configured
+- [ ] `.dockerignore` for efficient builds
+- [ ] `LICENSE` file included
 
-## Using in Pterodactyl
+## Tagging Strategy
 
-1. Import the recipe from the repo
-2. Select the game egg
-3. Create a server
-4. Configure environment variables
+| Branch | Tag Format | Use Case |
+|--------|-----------|----------|
+| `main` | `game` + `latest` | Production releases |
+| `develop` | `game-dev` | Testing/staging |
+| Tags | `game-vX.Y.Z` | Versioned releases |
+| Commits | `game-sha-XXXX` | CI debugging |
 
-## Using in Custom Panels
+## Troubleshooting
 
-Load `recipe.json` from each game directory. Point to the Docker image on ghcr.io.
+**Image not building?**
+- Check workflow status: Actions tab
+- Verify `Dockerfile` syntax
+- Check `.github/workflows/` for your game
 
-## Contributing
+**Recipe not loading in Pterodactyl?**
+- Verify image name in `recipe.json`
+- Check Docker image exists on ghcr.io
+- Validate JSON syntax in `recipe.json`
 
-Add new recipes:
-1. Create `rockstar/GAME_NAME/` directory
-2. Add `Dockerfile`, `start.sh`, `recipe.json`
-3. Push to trigger automatic build
-4. Update this README
+**Environment variables not working?**
+- Check `start.sh` for variable export
+- Verify `recipe.json` defines the variable
+- Check Pterodactyl panel passes env vars to container
