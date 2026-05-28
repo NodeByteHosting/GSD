@@ -26,6 +26,6 @@ RUN chmod +x /app/entrypoint.sh && \
 
 EXPOSE 25565 25575
 
-VOLUME ["data"]
+VOLUME ["/data"]
 
 ENTRYPOINT [ "/app/entrypoint.sh" ]
