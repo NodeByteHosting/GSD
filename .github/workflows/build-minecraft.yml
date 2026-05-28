@@ -1,15 +1,18 @@
-name: Build FiveM
+name: Build Minecraft
 
 on:
   workflow_dispatch:
-  
+
+  schedule:
+    - cron: "0 0 1 * *"
+
   push:
     branches:
       - main
       - develop
     paths:
-      - 'games/rockstar/fivem/**'
-      - '.github/workflows/build-fivem.yml'
+      - "games/minecraft/**"
+      - ".github/workflows/build-minecraft.yml"
   
   release:
     types: [published]
@@ -18,15 +21,17 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  build:
-    name: "games:fivem"
+  push:
+    name: "games:minecraft"
+
     runs-on: ubuntu-latest
+
     permissions:
       contents: read
       packages: write
-    
+
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set lowercase repository owner
@@ -44,16 +49,25 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Check if Dockerfile exists
+        id: check
+        run: |
+          if [ -f "./games/minecraft/Dockerfile" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Generate tags
         id: tags
         run: |
           OWNER="${{ steps.owner.outputs.value }}"
-          TAGS="${{ env.REGISTRY }}/$OWNER/games:fivem"
+          TAGS="${{ env.REGISTRY }}/$OWNER/games:minecraft"
           
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             TAGS="$TAGS,${{ env.REGISTRY }}/$OWNER/games:latest"
           elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-            TAGS="$TAGS,${{ env.REGISTRY }}/$OWNER/games:fivem-dev"
+            TAGS="$TAGS,${{ env.REGISTRY }}/$OWNER/games:minecraft-dev"
           elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
             VERSION="${{ github.ref_name }}"
             TAGS="$TAGS,${{ env.REGISTRY }}/$OWNER/games:$VERSION"
@@ -61,12 +75,19 @@ jobs:
           
           echo "tags=$TAGS" >> $GITHUB_OUTPUT
 
-      - name: Build and push
+      - name: Build and push image
+        if: steps.check.outputs.exists == 'true'
         uses: docker/build-push-action@v6
+
         with:
-          context: ./games/rockstar/fivem
-          file: ./games/rockstar/fivem/Dockerfile
+          context: ./games/minecraft
+          file: ./games/minecraft/Dockerfile
+
           push: true
+
+          platforms: linux/amd64
+
           tags: ${{ steps.tags.outputs.tags }}
+
           cache-from: type=gha
           cache-to: type=gha,mode=max

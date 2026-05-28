@@ -7,9 +7,11 @@ Docker recipes for game servers. Built for Pterodactyl panels and custom game se
 Recipes are organized by game franchise/publisher:
 
 ```
-rockstar/           - Rockstar Games
-  fivem/            - GTA V multiplayer (FiveM)
-  redm/             - Red Dead Redemption 2 multiplayer (RedM)
+games/
+  minecraft/        - Minecraft server recipes
+  rockstar/         - Rockstar Games
+    fivem/          - GTA V multiplayer (FiveM)
+    redm/           - Red Dead Redemption 2 multiplayer (RedM)
 ```
 
 ## Recipe Format
@@ -49,8 +51,8 @@ Images automatically build and push to ghcr.io:
 Load the recipe and Docker image:
 
 ```javascript
-const recipe = await fetch('https://raw.githubusercontent.com/nodebytehosting/game-recipes/main/rockstar/fivem/recipe.json').then(r => r.json());
-const image = 'ghcr.io/nodebytehosting/games:fivem';
+const recipe = await fetch('https://raw.githubusercontent.com/nodebytehosting/game-recipes/main/games/rockstar/fivem/recipe.json').then(r => r.json());
+const image = 'ghcr.io/nodebyte/games:fivem';
 ```
 
 ### Docker

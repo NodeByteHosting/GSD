@@ -27,7 +27,7 @@ docker run -it \
 ### Build Locally
 
 ```bash
-docker build -t fivem:latest rockstar/fivem/
+docker build -t fivem:latest games/rockstar/fivem/
 docker run -it \
   -e FIVEM_LICENSE=cfxk_your_key_here \
   -p 40120:40120/tcp \
