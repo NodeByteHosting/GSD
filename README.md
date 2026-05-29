@@ -1,6 +1,6 @@
 # Game Recipes
 
-Docker recipes for game servers. Built for Pterodactyl panels and custom game server manager.
+Docker recipes for game servers. Built for Pterodactyl panels and custom game server managers.
 
 ## Structure
 
