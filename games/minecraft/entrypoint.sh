@@ -41,7 +41,7 @@ export PATH=$JAVA_HOME/bin:$PATH
 
 java -version
 
-INSTALLER="/app/installers/${TYPE}.sh"
+INSTALLER="/home/container/installers/${TYPE}.sh"
 
 if [ ! -f "$INSTALLER" ]; then
     echo "Unsupported server type: $TYPE"
