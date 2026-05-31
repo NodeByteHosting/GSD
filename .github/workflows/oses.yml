@@ -9,6 +9,7 @@ on:
       - develop
     paths:
       - oses/**
+      - .github/workflows/oses.yml
 
 permissions:
   contents: read

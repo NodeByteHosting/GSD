@@ -29,7 +29,7 @@ LABEL       org.opencontainers.image.description="Python 3.8 runtime for contain
 LABEL       org.opencontainers.image.licenses=MIT
 LABEL       org.opencontainers.image.version="3.8"
 
-RUN         apk add --update --no-cache \
+RUN         apt-get update && apt-get install -y --no-install-recommends \
               ca-certificates \
               cmake \
               curl \
@@ -39,10 +39,11 @@ RUN         apk add --update --no-cache \
               git \
               make \
               openssl \
-              sqlite \
+              sqlite3 \
               tar \
               tzdata \
-            && adduser -D -h /home/container container
+            && useradd -d /home/container -s /bin/bash -m container \
+            && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 USER        container
 ENV         USER=container HOME=/home/container
