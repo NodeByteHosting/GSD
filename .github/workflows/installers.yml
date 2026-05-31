@@ -10,6 +10,10 @@ on:
     paths:
       - installers/**
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   pushMultiArch:
     name: "Build installers multiarch: ${{ matrix.tag }}"
