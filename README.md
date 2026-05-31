@@ -1,125 +1,194 @@
-# Game Recipes
+# NodeByte Recipes
 
-Docker recipes for game servers. Built for Pterodactyl panels and any custom game server managers.
+Docker container recipes for game servers, runtimes, and applications. Works with Pterodactyl panels, custom game server managers, and standard Docker.
+
+## Overview
+
+NodeByte Recipes provides Alpine-based Docker images for:
+- Game Servers: FiveM, RedM, Minecraft, and more
+- Runtimes: Go, Node.js, Python
+- Multi-platform: linux/amd64 and linux/arm64
+
+All images are automatically built and published to [GitHub Container Registry](https://github.com/orgs/NodeByteHosting/packages?repo_name=game-recipes).
 
 ## Structure
 
-Recipes are organized by game franchise/publisher:
-
 ```
-games/
-  minecraft/        - Minecraft server recipes
-  rockstar/         - Rockstar Games
-    fivem/          - GTA V multiplayer (FiveM)
-    redm/           - Red Dead Redemption 2 multiplayer (RedM)
+game-recipes/
+  games/          - Game server recipes
+  golang/         - Go runtime (1.14+)
+  nodejs/         - Node.js runtime (versions 12-20)
+  python/         - Python runtime
 ```
-
-## Recipe Format
-
-Each recipe directory contains:
-- `Dockerfile` - Container image definition
-- `recipe.json` - Pterodactyl egg configuration
-- `start.sh` - Server startup script
-- `server.cfg` - Default server configuration template
-- `README.md` - Usage and setup instructions
 
 ## Available Recipes
 
+### Game Servers
+
 | Game | Image | Status |
 |------|-------|--------|
-| FiveM | `ghcr.io/nodebytehosting/games:fivem` | ✅ Available |
-| RedM | `ghcr.io/nodebytehosting/games:redm` | 🔄 Coming soon |
+| FiveM (GTA V) | `ghcr.io/nodebytehosting/games:fivem` | Production |
+| RedM (RDR 2) | `ghcr.io/nodebytehosting/games:redm` | Coming soon |
+| Minecraft | `ghcr.io/nodebytehosting/games:minecraft` | Beta |
 
-## Build & Publish
+### Runtimes
 
-Images automatically build and push to ghcr.io:
+| Runtime | Versions | Image Format |
+|---------|----------|--------------|
+| Go | 1.14+ | `ghcr.io/nodebytehosting/go:go_{version}` |
+| Node.js | 12, 14, 16, 18, 20 | `ghcr.io/nodebytehosting/nodejs:nodejs_{version}` |
+| Python | 3.7+ | `ghcr.io/nodebytehosting/python:python_{version}` |
 
-- **main** → `latest` + game-specific tag (e.g., `fivem`)
-- **dev** → `game-dev` tag (e.g., `fivem-dev`)
-- **tags** → semver tags (e.g., `fivem-v1.0.0`)
+## Features
 
-## Usage
+- Multi-platform builds: amd64 and arm64
+- Minimal: Alpine 3.20 (~3.6MB)
+- Health checks and proper signal handling
+- Automated builds on push, schedule, and releases
+- Pterodactyl egg definitions included
+- Configured via environment variables
+- Non-root containers with security in mind
+
+## Quick Start
 
 ### Pterodactyl
 
-1. Import `recipe.json` as an egg
-2. Create server with the egg
-3. Configure environment variables in panel
-
-### Custom Panels
-
-Load the recipe and Docker image:
-
-```javascript
-const recipe = await fetch('https://raw.githubusercontent.com/nodebytehosting/game-recipes/main/games/rockstar/fivem/recipe.json').then(r => r.json());
-const image = 'ghcr.io/nodebytehosting/games:fivem';
-```
+1. Go to Admin > Nests in your panel
+2. Import the recipe JSON:
+   ```
+   https://raw.githubusercontent.com/NodeByteHosting/game-recipes/main/games/rockstar/fivem/recipe.json
+   ```
+3. Create a server using the new egg
+4. Set environment variables and start
 
 ### Docker
 
 ```bash
 docker pull ghcr.io/nodebytehosting/games:fivem
-docker run -e FIVEM_LICENSE=your_key -p 30120:30120/udp ghcr.io/nodebytehosting/games:fivem
+
+docker run \
+  -e FIVEM_LICENSE=your_license_key \
+  -p 30120:30120/udp \
+  ghcr.io/nodebytehosting/games:fivem
 ```
 
-## Adding a New Recipe
+### Docker Compose
 
-1. **Create directory structure:**
-   ```bash
-   mkdir -p PUBLISHER/GAME_NAME
-   ```
+```yaml
+version: '3.8'
 
-2. **Add required files:**
-   - `Dockerfile` - Base image, dependencies, labels
-   - `recipe.json` - Environment variables, server config
-   - `start.sh` - Startup logic
-   - `server.cfg` - Template configuration
-   - `README.md` - Setup instructions
+services:
+  fivem-server:
+    image: ghcr.io/nodebytehosting/games:fivem
+    ports:
+      - "30120:30120/udp"
+      - "40120:40120"
+    environment:
+      FIVEM_LICENSE: your_license_key
+      MAX_PLAYERS: 128
+      TXADMIN_ENABLE: 1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "test", "-f", "/proc/1/cmdline"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+```
 
-3. **Create GitHub Actions workflow:**
-   ```bash
-   cp .github/workflows/build-fivem.yml .github/workflows/build-GAME.yml
-   ```
-   Update image name and paths in the workflow.
+## Image Tags
 
-4. **Push to trigger build:**
-   - Create pull request or push to `develop`
-   - GitHub Actions builds image as `GAME-dev`
-   - Test and merge to `main` for release
+Images are tagged automatically based on branch/release:
 
-## Recipe Checklist
+### Main Branch
+- `ghcr.io/nodebytehosting/games:fivem` - Latest production
+- `ghcr.io/nodebytehosting/games:latest` - Latest across all games
 
-- [ ] `Dockerfile` with proper labels and base image
-- [ ] `recipe.json` with environment variables and metadata
-- [ ] `start.sh` with configuration validation
-- [ ] `server.cfg` template with comments
-- [ ] `README.md` with quick-start examples
-- [ ] GitHub Actions workflow configured
-- [ ] `.dockerignore` for efficient builds
-- [ ] `LICENSE` file included
+### Develop Branch
+- `ghcr.io/nodebytehosting/games:fivem-dev` - Development version
 
-## Tagging Strategy
+### Release Tags
+- `ghcr.io/nodebytehosting/games:fivem-v1.0.0` - Semantic versioning
 
-| Branch | Tag Format | Use Case |
-|--------|-----------|----------|
-| `main` | `game` + `latest` | Production releases |
-| `develop` | `game-dev` | Testing/staging |
-| Tags | `game-vX.Y.Z` | Versioned releases |
-| Commits | `game-sha-XXXX` | CI debugging |
+## Building Locally
 
-## Troubleshooting
+```bash
+# Clone repository
+git clone https://github.com/NodeByteHosting/game-recipes.git
+cd game-recipes
 
-**Image not building?**
-- Check workflow status: Actions tab
-- Verify `Dockerfile` syntax
-- Check `.github/workflows/` for your game
+# Build a specific recipe
+docker build -f games/rockstar/fivem/Dockerfile -t my-fivem:latest games/rockstar/fivem
+
+# Push to registry
+docker tag my-fivem:latest ghcr.io/nodebytehosting/games:fivem
+docker push ghcr.io/nodebytehosting/games:fivem
+```
+
+## CI/CD
+
+Recipes build automatically via GitHub Actions:
+
+- `games.yml` - Game server recipes
+- `go.yml` - Go runtimes
+- `nodejs.yml` - Node.js runtimes
+- `python.yml` - Python runtime
+
+Builds trigger on:
+- Manual dispatch
+- Schedule (1st of month)
+- Push to main/develop
+- GitHub releases
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for:
+- Adding new game recipes
+- Adding new runtime versions
+- Code standards and best practices
+- Testing guidelines
+
+## Code of Conduct
+
+Please review our [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) - we welcome all contributors and maintain an inclusive community.
+
+## Security
+
+See [SECURITY.md](SECURITY.md) for:
+- Reporting security vulnerabilities
+- Security best practices
+- Dependency scanning
+
+## License
+
+MIT - See LICENSE for details. Free for personal and commercial use.
+
+## Support
+
+- Documentation: Each recipe has a README with options
+- Issues: [GitHub Issues](https://github.com/NodeByteHosting/game-recipes/issues)
+- Discussions: [GitHub Discussions](https://github.com/NodeByteHosting/game-recipes/discussions)
+- Discord: [Join our server](https://discord.gg/Bg3Sf5fqa4)
+
+## Credits
+
+Built and maintained by [NodeByte LTD](https://nodebyte.co.uk)
+
+## Image Tags
+
+| Branch | Tags | Purpose |
+|--------|------|----------|
+| main | game + latest | Production |
+| develop | game-dev | Testing |
+| releases | game-vX.Y.Z | Versioned |
+| commits | game-sha | Debugging |
+
+## FAQ
+
+**Build not working?**
+Check the Actions tab for error logs. Make sure the Dockerfile exists and is valid.
 
 **Recipe not loading in Pterodactyl?**
-- Verify image name in `recipe.json`
-- Check Docker image exists on ghcr.io
-- Validate JSON syntax in `recipe.json`
+Verify the image name matches in recipe.json. Check the image exists on ghcr.io.
 
-**Environment variables not working?**
-- Check `start.sh` for variable export
-- Verify `recipe.json` defines the variable
-- Check Pterodactyl panel passes env vars to container
+**Variables not set?**
+Check start.sh exports the variable. Make sure recipe.json defines it. Verify Pterodactyl passes it to the container.
