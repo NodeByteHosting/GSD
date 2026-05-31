@@ -2,22 +2,37 @@
 
 Docker images for Java-based applications (Minecraft servers, Spring applications, etc.). Uses Eclipse Temurin JDK with Debian base.
 
+## Version Support Policy
+
+This project maintains the following Java versions:
+
+- **LTS (Long-Term Support)**: Java 11, 17, 21, 26 - Actively built and maintained
+- **Current Releases**: Java 22, 25 - Built on each release
+- **Legacy**: Java 8 - Archives only, not actively built
+- **EOL (End-of-Life)**: Java 16, 19 - Not built (IBM Semeru missing multiarch support, upstream EOL)
+
+To use EOL versions, build locally from the Dockerfile:
+
+```bash
+docker build -t java:16 java/16/
+```
+
 ## Available Versions
 
-| Version | Status | JDK Type | Image Name |
-|---------|--------|----------|------------|
-| 8 | Supported | HotSpot | `ghcr.io/nodebytehosting/java:java_8` |
-| 8 (with Project Jigsaw) | Supported | Project Jigsaw | `ghcr.io/nodebytehosting/java:java_8j9` |
-| 11 | Supported | HotSpot | `ghcr.io/nodebytehosting/java:java_11` |
-| 11 (with Project Jigsaw) | Supported | Project Jigsaw | `ghcr.io/nodebytehosting/java:java_11j9` |
-| 16 | Supported | HotSpot | `ghcr.io/nodebytehosting/java:java_16` |
-| 16 (with Project Jigsaw) | Supported | Project Jigsaw | `ghcr.io/nodebytehosting/java:java_16j9` |
-| 17 | Supported | HotSpot | `ghcr.io/nodebytehosting/java:java_17` |
-| 19 | Supported | HotSpot | `ghcr.io/nodebytehosting/java:java_19` |
-| 21 | LTS | HotSpot | `ghcr.io/nodebytehosting/java:java_21` |
-| 22 | Supported | HotSpot | `ghcr.io/nodebytehosting/java:java_22` |
-| 25 | Latest | HotSpot | `ghcr.io/nodebytehosting/java:java_25` |
-| 26 | Latest LTS | HotSpot | `ghcr.io/nodebytehosting/java:java_26` |
+| Version | Status | JDK Type | Image Name | Notes |
+|---------|--------|----------|------------|-------|
+| 8 | EOL | HotSpot | `ghcr.io/nodebytehosting/java:java_8` | Archive only |
+| 8 (J9) | EOL | Project Jigsaw | `ghcr.io/nodebytehosting/java:java_8j9` | Archive only |
+| 11 | LTS | HotSpot | `ghcr.io/nodebytehosting/java:java_11` | Long-term support |
+| 11 (J9) | LTS | Project Jigsaw | `ghcr.io/nodebytehosting/java:java_11j9` | Long-term support |
+| 16 | EOL | HotSpot | `ghcr.io/nodebytehosting/java:java_16` | No multiarch image available |
+| 16 (J9) | EOL | Project Jigsaw | `ghcr.io/nodebytehosting/java:java_16j9` | No multiarch image available |
+| 17 | LTS | HotSpot | `ghcr.io/nodebytehosting/java:java_17` | Long-term support |
+| 19 | EOL | HotSpot | `ghcr.io/nodebytehosting/java:java_19` | Unsupported, no longer built |
+| 21 | LTS | HotSpot | `ghcr.io/nodebytehosting/java:java_21` | Long-term support |
+| 22 | Current | HotSpot | `ghcr.io/nodebytehosting/java:java_22` | Current release |
+| 25 | Current | HotSpot | `ghcr.io/nodebytehosting/java:java_25` | Current release |
+| 26 | LTS | HotSpot | `ghcr.io/nodebytehosting/java:java_26` | Latest LTS |
 
 ## Files
 

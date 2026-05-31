@@ -35,8 +35,8 @@ RUN         apk add --update --no-cache \
               curl \
               libstdc++ \
               libgcc \
-              node-npm \
-              node \
+              npm \
+              nodejs \
               tzdata \
               unzip \
             && adduser -D -h /home/container container

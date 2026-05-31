@@ -36,9 +36,5 @@ USER        container
 ENV         USER=container HOME=/home/container
 WORKDIR     /home/container
 
-COPY        --chmod=755 --chown=container:container ./entrypoint.sh /entrypoint.sh
-
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
             CMD test -f /proc/1/cmdline || exit 1
-
-ENTRYPOINT  ["/entrypoint.sh"]

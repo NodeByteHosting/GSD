@@ -30,8 +30,9 @@ LABEL       org.opencontainers.image.description="Debian Bookworm base image for
 LABEL       org.opencontainers.image.licenses=MIT
 LABEL       org.opencontainers.image.version="bookworm"
 
-RUN         apt-get update && apt-get upgrade -y \
-                && apt-get install -y --no-install-recommends \
+RUN         apt-get update && apt-get upgrade -y
+
+RUN         apt-get install -y --no-install-recommends \
                 ca-certificates \
                 curl \
                 git \
@@ -40,8 +41,9 @@ RUN         apt-get update && apt-get upgrade -y \
                 net-tools \
                 tar \
                 tzdata \
-                wget \
-                && update-locale LANG=en_US.UTF-8 \
+                wget
+
+RUN         update-locale LANG=en_US.UTF-8 \
                 && dpkg-reconfigure --frontend noninteractive locales \
                 && useradd -m -d /home/container -s /bin/bash container \
                 && apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -52,9 +54,6 @@ ENV         DEBIAN_FRONTEND=noninteractive
 
 WORKDIR     /home/container
 
-COPY        --chmod=755 --chown=container:container ./entrypoint.sh /entrypoint.sh
+STOPSIGNAL  SIGINT
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-            CMD test -f /proc/1/cmdline || exit 1
-
-ENTRYPOINT  ["/entrypoint.sh"]
+ENTRYPOINT  ["/bin/bash"]

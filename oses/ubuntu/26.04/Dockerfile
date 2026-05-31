@@ -22,14 +22,12 @@ RUN         apt install -y gcc g++ libgcc1 libc++-dev gdb libc6 git wget curl ta
                 libfluidsynth-dev libmariadb-dev libicu-dev libssl3 libduktape207 libjsoncpp-dev libleveldb1d libncurses6 libncursesw6 tini 
 
 ## Configure locale
-RUN         update-locale lang=en_US.UTF-8 \
+RUN         update-locale LANG=en_US.UTF-8 \
             && dpkg-reconfigure --frontend noninteractive locales
 
 WORKDIR     /home/container
 
 STOPSIGNAL  SIGINT
 
-COPY        --chown=container:container ../entrypoint.sh /entrypoint.sh
-RUN         chmod +x /entrypoint.sh
 ENTRYPOINT  ["/usr/bin/tini", "-g", "--"]
-CMD         ["/entrypoint.sh"]
+CMD         ["/bin/bash"]
