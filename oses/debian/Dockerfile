@@ -43,8 +43,8 @@ RUN         apt-get install -y --no-install-recommends \
                 tzdata \
                 wget
 
-RUN         update-locale LANG=en_US.UTF-8 \
-                && dpkg-reconfigure --frontend noninteractive locales \
+RUN         echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen \
+                && locale-gen \
                 && useradd -m -d /home/container -s /bin/bash container \
                 && apt-get clean && rm -rf /var/lib/apt/lists/*
 
