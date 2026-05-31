@@ -42,7 +42,9 @@ RUN         apk add --update --no-cache \
               tar \
               tzdata \
               wget \
-            && adduser -D -h /home/container container
+            && adduser -D -h /home/container container \
+			&& mkdir -p /home/container \
+			&& chown -R container:container /home/container
 
 USER        container
 ENV         USER=container HOME=/home/container
