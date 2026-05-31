@@ -1,4 +1,4 @@
-name: Build Node.js
+name: Build Python
 
 on:
   workflow_dispatch:
@@ -11,8 +11,8 @@ on:
       - main
       - develop
     paths:
-      - 'nodejs/**'
-      - '.github/workflows/nodejs.yml'
+      - 'python/**'
+      - '.github/workflows/python.yml'
   
   release:
     types: [published]
@@ -22,7 +22,7 @@ env:
 
 jobs:
   build:
-    name: "nodejs:${{ matrix.version }}"
+    name: "python:${{ matrix.version }}"
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -32,8 +32,9 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - "20"
-          - "22"
+          - "3.7"
+          - "3.8"
+          - "3.9"
     
     steps:
       - name: Checkout code
@@ -47,7 +48,7 @@ jobs:
       - name: Check if Dockerfile exists
         id: check
         run: |
-          if [ -f "./nodejs/${{ matrix.version }}/Dockerfile" ]; then
+          if [ -f "./python/${{ matrix.version }}/Dockerfile" ]; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT
@@ -75,15 +76,15 @@ jobs:
         run: |
           OWNER="${{ steps.owner.outputs.value }}"
           VERSION="${{ matrix.version }}"
-          TAGS="${{ env.REGISTRY }}/$OWNER/nodejs:nodejs_$VERSION"
+          TAGS="${{ env.REGISTRY }}/$OWNER/python:python_$VERSION"
           
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            TAGS="$TAGS,${{ env.REGISTRY }}/$OWNER/nodejs:latest"
+            TAGS="$TAGS,${{ env.REGISTRY }}/$OWNER/python:latest"
           elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-            TAGS="$TAGS,${{ env.REGISTRY }}/$OWNER/nodejs:nodejs_$VERSION-dev"
+            TAGS="$TAGS,${{ env.REGISTRY }}/$OWNER/python:python_$VERSION-dev"
           elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
             REL_TAG="${{ github.ref_name }}"
-            TAGS="$TAGS,${{ env.REGISTRY }}/$OWNER/nodejs:nodejs_$VERSION-$REL_TAG"
+            TAGS="$TAGS,${{ env.REGISTRY }}/$OWNER/python:python_$VERSION-$REL_TAG"
           fi
           
           echo "tags=$TAGS" >> $GITHUB_OUTPUT
@@ -92,8 +93,8 @@ jobs:
         if: steps.check.outputs.exists == 'true'
         uses: docker/build-push-action@v6
         with:
-          context: ./nodejs
-          file: ./nodejs/${{ matrix.version }}/Dockerfile
+          context: ./python
+          file: ./python/${{ matrix.version }}/Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.tags.outputs.tags }}

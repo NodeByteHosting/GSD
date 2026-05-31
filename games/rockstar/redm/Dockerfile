@@ -25,7 +25,7 @@ FROM        --platform=$TARGETOS/$TARGETARCH alpine:3.20
 LABEL       author="Tyler Hodgkin" maintainer="tyler.h@nodebyte.co.uk"
 
 LABEL       org.opencontainers.image.source="https://github.com/nodebytehosting/recipes"
-LABEL       org.opencontainers.image.description="FiveM server with txAdmin support"
+LABEL       org.opencontainers.image.description="RedM server with txAdmin support"
 LABEL       org.opencontainers.image.licenses=MIT
 LABEL       org.opencontainers.image.version="latest"
 

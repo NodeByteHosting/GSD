@@ -34,6 +34,8 @@ jobs:
         game:
           - minecraft
           - rockstar/fivem
+          - rockstar/redm
+          - rust
     
     steps:
       - name: Checkout code

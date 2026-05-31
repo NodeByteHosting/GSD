@@ -1,0 +1,80 @@
+{
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-05-30T00:00:00+00:00",
+    "name": "RedM",
+    "author": "NodeByteHosting",
+    "description": "RedM server (RDR2 multiplayer) with txAdmin.",
+    "features": [
+        "eula",
+        "role_editor"
+    ],
+    "docker_images": {
+        "ghcr.io/nodebytehosting/games:redm": "ghcr.io/nodebytehosting/games:redm"
+    },
+    "file_denylist": [],
+    "startup": "bash start.sh",
+    "config": {
+        "files": "{}",
+        "startup": "{\n  \"done\": \"Server is ready to accept connections\"\n}",
+        "log": "{\n  \"custom\": false,\n  \"location\": \"txData/logs/latest.log\"\n}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": "#!/bin/bash\nset -e\n\necho \"Downloading RedM Server...\"\nmkdir -p /home/container/redm\ncd /home/container/redm\n\n# Download the latest RedM server build\nDOWNLOAD_URL=$(curl -sSL https://changelogs-live.fivem.net/api/changelog/versions/linux/server/redm | jq -r '.latest_download' 2>/dev/null)\n\nif [ -z \"$DOWNLOAD_URL\" ] || [ \"$DOWNLOAD_URL\" = \"null\" ]; then\n    echo \"Failed to get download URL\"\n    exit 1\nfi\n\ncurl -sSL \"$DOWNLOAD_URL\" -o server.tar.gz\ntar -xzf server.tar.gz\nrm -f server.tar.gz run.sh\n\necho \"RedM Server downloaded successfully!\"\necho \"\"\necho \"Next steps:\"\necho \"1. Set REDM_LICENSE environment variable with your server key from https://portal.cfx.re/\"\necho \"2. Configure txAdmin port (default: 40120) and server port (default: 30120)\"\necho \"3. Start the server!\"\n"
+    },
+    "variables": [
+        {
+            "name": "RedM License Key",
+            "description": "Your RedM server license key from https://portal.cfx.re/",
+            "env_variable": "REDM_LICENSE",
+            "default_value": "",
+            "user_viewable": false,
+            "user_editable": true,
+            "rules": "nullable|string|max:128",
+            "field_type": "text"
+        },
+        {
+            "name": "Auto Update",
+            "description": "Automatically download and update RedM server binaries on startup",
+            "env_variable": "AUTO_UPDATE",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|in:0,1",
+            "field_type": "text"
+        },
+        {
+            "name": "txAdmin Port",
+            "description": "Port for the txAdmin web panel",
+            "env_variable": "TXHOST_TXA_PORT",
+            "default_value": "40120",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|numeric|between:1024,65535",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Port",
+            "description": "Main server port for RedM connections",
+            "env_variable": "TXHOST_FXS_PORT",
+            "default_value": "30120",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|numeric|between:1024,65535",
+            "field_type": "text"
+        },
+        {
+            "name": "Max Players",
+            "description": "Maximum number of player slots",
+            "env_variable": "MAX_PLAYERS",
+            "default_value": "32",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|numeric|between:1,1024",
+            "field_type": "text"
+        }
+    ]
+}

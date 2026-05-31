@@ -20,42 +20,21 @@
 # SOFTWARE.
 #
 
-FROM        --platform=$TARGETOS/$TARGETARCH alpine:3.20
+FROM        --platform=$TARGETOS/$TARGETARCH eclipse-temurin:25-jdk
 
 LABEL       author="Tyler Hodgkin" maintainer="tyler.h@nodebyte.co.uk"
 
 LABEL       org.opencontainers.image.source="https://github.com/nodebytehosting/recipes"
-LABEL       org.opencontainers.image.description="FiveM server with txAdmin support"
 LABEL       org.opencontainers.image.licenses=MIT
-LABEL       org.opencontainers.image.version="latest"
 
-RUN         apk add --update --no-cache \
-              bash \
-              ca-certificates \
-              curl \
-              jq \
-              libc6-compat \
-              libstdc++ \
-              tzdata \
-            && adduser -D -h /home/container container
+RUN 		apt-get update -y \
+				&& apt-get install -y lsof curl ca-certificates openssl git tar sqlite3 fontconfig libfreetype6 tzdata iproute2 libstdc++6 \
+				&& useradd -d /home/container -m container
 
 USER        container
 ENV         USER=container HOME=/home/container
 WORKDIR     /home/container
 
-ENV         TXHOST_DATA_PATH=/home/container/txData \
-            TXHOST_INTERFACE=0.0.0.0 \
-            TXHOST_TXA_PORT=40120 \
-            TXHOST_FXS_PORT=30120 \
-            TXADMIN_ENABLE=1 \
-            AUTO_UPDATE=0
+COPY        ./../entrypoint.sh /entrypoint.sh
 
-COPY        --chmod=755 --chown=container:container start.sh /home/container/start.sh
-COPY        --chmod=755 --chown=container:container entrypoint.sh /home/container/entrypoint.sh
-
-EXPOSE      40120/tcp 30120/udp
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-            CMD curl -f http://localhost:${TXHOST_TXA_PORT:-40120}/api/getStatus 2>/dev/null || exit 1
-
-ENTRYPOINT  ["/home/container/entrypoint.sh"]
+CMD         [ "/bin/bash", "/entrypoint.sh" ]

@@ -26,16 +26,7 @@ set -e
 cd /home/container || exit 1
 
 # Print startup message
-printf "\033[1m\033[33mcontainer@nodebyte~ \033[0mFiveM Server\n"
-
-# Export internal IP for FiveM
-export INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}' 2>/dev/null || echo "127.0.0.1")
-
-# Validate STARTUP variable
-if [ -z "${STARTUP}" ]; then
-  printf "\033[1m\033[31mERROR\033[0m: STARTUP variable is not set\n" >&2
-  exit 1
-fi
+printf "\033[1m\033[33mcontainer@nodebyte~ \033[0mRedM Server\n"
 
 # Execute start script
 exec bash /home/container/start.sh

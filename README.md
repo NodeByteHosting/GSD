@@ -6,7 +6,7 @@ Docker container recipes for game servers, runtimes, and applications. Works wit
 
 NodeByte Recipes provides Alpine-based Docker images for:
 - Game Servers: FiveM, RedM, Minecraft, and more
-- Runtimes: Go, Node.js, Python
+- Runtimes: Go, Node.js, Python, Bun, Java
 - Multi-platform: linux/amd64 and linux/arm64
 
 All images are automatically built and published to [GitHub Container Registry](https://github.com/orgs/NodeByteHosting/packages?repo_name=game-recipes).
@@ -18,7 +18,9 @@ game-recipes/
   games/          - Game server recipes
   golang/         - Go runtime (1.14+)
   nodejs/         - Node.js runtime (versions 12-20)
-  python/         - Python runtime
+  bun/            - Bun runtime (versions 1.0+)
+  python/         - Python runtime (3.7-3.11)
+  java/           - Java runtime (v25+)
 ```
 
 ## Available Recipes
@@ -35,9 +37,11 @@ game-recipes/
 
 | Runtime | Versions | Image Format |
 |---------|----------|--------------|
-| Go | 1.14+ | `ghcr.io/nodebytehosting/go:go_{version}` |
-| Node.js | 12, 14, 16, 18, 20 | `ghcr.io/nodebytehosting/nodejs:nodejs_{version}` |
-| Python | 3.7+ | `ghcr.io/nodebytehosting/python:python_{version}` |
+| Go | 1.14+ | `ghcr.io/nodebytehosting/golang:golang_{version}` |
+| Node.js | 20, 22 (LTS only) | `ghcr.io/nodebytehosting/nodejs:nodejs_{version}` |
+| Bun | 1.0, 1.1, latest | `ghcr.io/nodebytehosting/bun:bun_{version}` |
+| Python | 3.7, 3.8, 3.9, 3.10, 3.11 | `ghcr.io/nodebytehosting/python:python_{version}` |
+| Java | 25+ | `ghcr.io/nodebytehosting/java:java_{version}` |
 
 ## Features
 
@@ -131,7 +135,11 @@ Recipes build automatically via GitHub Actions:
 - `games.yml` - Game server recipes
 - `go.yml` - Go runtimes
 - `nodejs.yml` - Node.js runtimes
+- `bun.yml` - Bun runtimes
 - `python.yml` - Python runtime
+- `java.yml` - Java runtime
+- `oses.yml` - Base OS images
+- `installers.yml` - Installer utilities
 
 Builds trigger on:
 - Manual dispatch

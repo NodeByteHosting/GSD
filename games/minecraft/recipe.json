@@ -1,0 +1,109 @@
+{
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-05-30T00:00:00+00:00",
+    "name": "Minecraft",
+    "author": "NodeByteHosting",
+    "description": "Minecraft Java Edition server with multi-version Java support.",
+    "features": [
+        "eula"
+    ],
+    "docker_images": {
+        "ghcr.io/nodebytehosting/games:minecraft": "ghcr.io/nodebytehosting/games:minecraft"
+    },
+    "file_denylist": [],
+    "startup": "bash start.sh",
+    "config": {
+        "files": "{}",
+        "startup": "{\n  \"done\": \"Done \\\\(\\\\d+\\\\.\\\\d+s\\\\)! For help, type\"\n}",
+        "log": "{\n  \"custom\": false,\n  \"location\": \"logs/latest.log\"\n}",
+        "stop": "stop"
+    },
+    "scripts": {
+        "installation": "#!/bin/bash\nset -e\n\necho \"Installing Minecraft Server...\"\nmkdir -p /home/container\n\necho \"Downloading server.jar...\"\ncd /home/container\n\n# This is a placeholder - replace with your specific server jar URL\n# Examples:\n# - Vanilla: https://launcher.mojang.com/v1/objects/...\n# - Paper: https://papermc.io/api/v2/projects/paper/versions/latest/builds/latest/downloads/paper-latest.jar\n# - Spigot: Built from BuildTools\n\necho \"Creating server properties...\"\ncat > server.properties << 'EOF'\neula=true\nserver-port=25565\nmax-players=20\ndifficulty=2\ngamemode=survival\nonline-mode=true\nview-distance=10\nEOF\n\necho \"Minecraft Server installed!\"\n"
+    },
+    "variables": [
+        {
+            "name": "Java Version",
+            "description": "Java version to use: 8, 11, 17, or 21",
+            "env_variable": "JAVA_VERSION",
+            "default_value": "17",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|in:8,11,17,21",
+            "field_type": "text"
+        },
+        {
+            "name": "Memory (MB)",
+            "description": "Memory allocation for the server in megabytes",
+            "env_variable": "MEMORY",
+            "default_value": "1024",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|numeric|between:256,65536",
+            "field_type": "text"
+        },
+        {
+            "name": "EULA",
+            "description": "Accept Minecraft EULA (must be TRUE to start server)",
+            "env_variable": "EULA",
+            "default_value": "FALSE",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|in:TRUE,FALSE",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Name",
+            "description": "Server name displayed in server list",
+            "env_variable": "SERVER_NAME",
+            "default_value": "Minecraft Server",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:59",
+            "field_type": "text"
+        },
+        {
+            "name": "Difficulty",
+            "description": "Server difficulty: 0=Peaceful, 1=Easy, 2=Normal, 3=Hard",
+            "env_variable": "DIFFICULTY",
+            "default_value": "2",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|in:0,1,2,3",
+            "field_type": "text"
+        },
+        {
+            "name": "Game Mode",
+            "description": "Default game mode for players",
+            "env_variable": "GAMEMODE",
+            "default_value": "survival",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|in:survival,creative,adventure,spectator",
+            "field_type": "text"
+        },
+        {
+            "name": "Max Players",
+            "description": "Maximum number of players allowed",
+            "env_variable": "MAX_PLAYERS",
+            "default_value": "20",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|numeric|between:1,65535",
+            "field_type": "text"
+        },
+        {
+            "name": "Online Mode",
+            "description": "Require players to authenticate with Minecraft account",
+            "env_variable": "ONLINE_MODE",
+            "default_value": "true",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|in:true,false",
+            "field_type": "text"
+        }
+    ]
+}

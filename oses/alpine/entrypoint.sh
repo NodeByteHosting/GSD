@@ -23,19 +23,34 @@
 
 set -e
 
+# Default the TZ environment variable to UTC
+TZ=${TZ:-UTC}
+export TZ
+
+# Set environment variable that holds the Internal Docker IP
+INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}' 2>/dev/null || echo "127.0.0.1")
+export INTERNAL_IP
+
+# Switch to the container's working directory
+if [ ! -d "/home/container" ]; then
+  printf "\033[1m\033[31mERROR\033[0m: /home/container directory does not exist\n" >&2
+  exit 1
+fi
 cd /home/container || exit 1
 
-# Print startup message
-printf "\033[1m\033[33mcontainer@nodebyte~ \033[0mFiveM Server\n"
-
-# Export internal IP for FiveM
-export INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}' 2>/dev/null || echo "127.0.0.1")
-
-# Validate STARTUP variable
+# Validate STARTUP variable is set
 if [ -z "${STARTUP}" ]; then
   printf "\033[1m\033[31mERROR\033[0m: STARTUP variable is not set\n" >&2
   exit 1
 fi
 
-# Execute start script
-exec bash /home/container/start.sh
+# Convert all of the "{{VARIABLE}}" parts of the command into the expected shell
+# variable format of "${VARIABLE}" before evaluating the string and automatically
+# replacing the values.
+PARSED=$(echo "${STARTUP}" | sed -e 's/{{/${/g' -e 's/}}/}/g' | eval echo "$(cat -)")
+
+# Display the command we're running in the output, and then execute it with the env
+# from the container itself. Use exec to replace the shell process for proper signal handling.
+printf "\033[1m\033[33mcontainer@nodebyte~ \033[0m%s\n" "$PARSED"
+# shellcheck disable=SC2086
+exec env ${PARSED}

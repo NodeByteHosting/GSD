@@ -1,0 +1,38 @@
+# .dockerignore - Exclude unnecessary files from Docker build context
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+README.md
+LICENSE
+
+# GitHub
+.github
+
+# Build artifacts
+Dockerfile.bak
+*.tar
+*.tar.gz
+*.zip
+.dockerignore
+
+# Local files
+.env
+.env.local
+*.log
+
+# Development
+node_modules
+__pycache__
+*.pyc
+.venv
+venv/
+
+# IDE
+.vscode
+.idea
+*.swp
