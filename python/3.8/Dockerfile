@@ -20,7 +20,7 @@
 # SOFTWARE.
 #
 
-FROM        --platform=$TARGETOS/$TARGETARCH python:3.8-alpine3.20
+FROM        --platform=$TARGETOS/$TARGETARCH python:3.8-slim-bookworm
 
 LABEL       author="Tyler Hodgkin" maintainer="tyler.h@nodebyte.co.uk"
 
