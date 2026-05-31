@@ -1,15 +1,18 @@
-name: Build FiveM
+name: Build Go
 
 on:
   workflow_dispatch:
+  
+  schedule:
+    - cron: "0 0 1 * *"
   
   push:
     branches:
       - main
       - develop
     paths:
-      - 'games/rockstar/fivem/**'
-      - '.github/workflows/build-fivem.yml'
+      - 'golang/**'
+      - '.github/workflows/go.yml'
   
   release:
     types: [published]
@@ -19,11 +22,17 @@ env:
 
 jobs:
   build:
-    name: "games:fivem"
+    name: "go:${{ matrix.version }}"
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - "1.14"
     
     steps:
       - name: Checkout code
@@ -34,10 +43,25 @@ jobs:
         run: |
           echo "value=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
+      - name: Check if Dockerfile exists
+        id: check
+        run: |
+          if [ -f "./golang/${{ matrix.version }}/Dockerfile" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up QEMU
+        if: steps.check.outputs.exists == 'true'
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up Docker Buildx
+        if: steps.check.outputs.exists == 'true'
         uses: docker/setup-buildx-action@v3
 
       - name: Login to GHCR
+        if: steps.check.outputs.exists == 'true'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -45,28 +69,32 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate tags
+        if: steps.check.outputs.exists == 'true'
         id: tags
         run: |
           OWNER="${{ steps.owner.outputs.value }}"
-          TAGS="${{ env.REGISTRY }}/$OWNER/games:fivem"
+          VERSION="${{ matrix.version }}"
+          TAGS="${{ env.REGISTRY }}/$OWNER/go:go_$VERSION"
           
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            TAGS="$TAGS,${{ env.REGISTRY }}/$OWNER/games:latest"
+            TAGS="$TAGS,${{ env.REGISTRY }}/$OWNER/go:latest"
           elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-            TAGS="$TAGS,${{ env.REGISTRY }}/$OWNER/games:fivem-dev"
+            TAGS="$TAGS,${{ env.REGISTRY }}/$OWNER/go:go_$VERSION-dev"
           elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            VERSION="${{ github.ref_name }}"
-            TAGS="$TAGS,${{ env.REGISTRY }}/$OWNER/games:$VERSION"
+            REL_TAG="${{ github.ref_name }}"
+            TAGS="$TAGS,${{ env.REGISTRY }}/$OWNER/go:go_$VERSION-$REL_TAG"
           fi
           
           echo "tags=$TAGS" >> $GITHUB_OUTPUT
 
       - name: Build and push
+        if: steps.check.outputs.exists == 'true'
         uses: docker/build-push-action@v6
         with:
-          context: ./games/rockstar/fivem
-          file: ./games/rockstar/fivem/Dockerfile
+          context: ./golang
+          file: ./golang/${{ matrix.version }}/Dockerfile
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.tags.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
