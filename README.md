@@ -16,11 +16,13 @@ All images are automatically built and published to [GitHub Container Registry](
 ```
 game-recipes/
   games/          - Game server recipes
+  oses/           - OS base images (Alpine, Debian, Ubuntu)
+  installers/     - Temporary installer images
   golang/         - Go runtime (1.14+)
-  nodejs/         - Node.js runtime (versions 12-20)
-  bun/            - Bun runtime (versions 1.0+)
+  nodejs/         - Node.js runtime (20, 22 LTS only)
+  bun/            - Bun runtime (1.0, 1.1, latest, canary)
   python/         - Python runtime (3.7-3.11)
-  java/           - Java runtime (v25+)
+  java/           - Java runtime (8, 11, 16, 17, 19, 21, 22, 25, 26)
 ```
 
 ## Available Recipes
@@ -32,6 +34,8 @@ game-recipes/
 | FiveM (GTA V) | `ghcr.io/nodebytehosting/games:fivem` | Production |
 | RedM (RDR 2) | `ghcr.io/nodebytehosting/games:redm` | Coming soon |
 | Minecraft | `ghcr.io/nodebytehosting/games:minecraft` | Beta |
+| Rust | `ghcr.io/nodebytehosting/games:rust` | Production |
+| Hytale | `ghcr.io/nodebytehosting/games:hytale` | Production |
 
 ### Runtimes
 
@@ -39,9 +43,16 @@ game-recipes/
 |---------|----------|--------------|
 | Go | 1.14+ | `ghcr.io/nodebytehosting/golang:golang_{version}` |
 | Node.js | 20, 22 (LTS only) | `ghcr.io/nodebytehosting/nodejs:nodejs_{version}` |
-| Bun | 1.0, 1.1, latest | `ghcr.io/nodebytehosting/bun:bun_{version}` |
+| Bun | 1.0, 1.1, latest, canary | `ghcr.io/nodebytehosting/bun:bun_{version}` |
 | Python | 3.7, 3.8, 3.9, 3.10, 3.11 | `ghcr.io/nodebytehosting/python:python_{version}` |
-| Java | 25+ | `ghcr.io/nodebytehosting/java:java_{version}` |
+| Java | 8, 8j9, 11, 11j9, 16, 16j9, 17, 19, 21, 22, 25, 26 | `ghcr.io/nodebytehosting/java:java_{version}` |
+
+### Operating Systems & Installers
+
+| Type | Variants | Image Format | Use Case |
+|------|----------|--------------|----------|
+| OS Images | Alpine 3.20, Debian Bookworm, Ubuntu 22.04-26.04 | `ghcr.io/nodebytehosting/oses:{name}` | Base container images |
+| Installers | Alpine, Debian, Ubuntu, Java (8, 11, 17, 21, 25, 26) | `ghcr.io/nodebytehosting/installers:{name}` | Temporary deployment images |
 
 ## Features
 

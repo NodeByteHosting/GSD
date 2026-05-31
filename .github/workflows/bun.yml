@@ -25,9 +25,8 @@ jobs:
     strategy:
       matrix:
         tag:
-          - "1.0"
-          - "1.1"
           - "latest"
+          - "canary"
 
     steps:
       - name: Checkout repository
@@ -47,7 +46,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/buildx-action@v6
+        uses: docker/build-push-action@v6
         with:
           context: ./bun/${{ matrix.tag }}
           platforms: linux/amd64,linux/arm64

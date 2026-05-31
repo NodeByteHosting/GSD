@@ -1,10 +1,27 @@
 # Java Runtime
 
-Docker image for Java-based applications (Minecraft servers, Spring applications, etc.). Uses Eclipse Temurin JDK with Debian base.
+Docker images for Java-based applications (Minecraft servers, Spring applications, etc.). Uses Eclipse Temurin JDK with Debian base.
+
+## Available Versions
+
+| Version | Status | JDK Type | Image Name |
+|---------|--------|----------|------------|
+| 8 | Supported | HotSpot | `ghcr.io/nodebytehosting/java:java_8` |
+| 8 (with Project Jigsaw) | Supported | Project Jigsaw | `ghcr.io/nodebytehosting/java:java_8j9` |
+| 11 | Supported | HotSpot | `ghcr.io/nodebytehosting/java:java_11` |
+| 11 (with Project Jigsaw) | Supported | Project Jigsaw | `ghcr.io/nodebytehosting/java:java_11j9` |
+| 16 | Supported | HotSpot | `ghcr.io/nodebytehosting/java:java_16` |
+| 16 (with Project Jigsaw) | Supported | Project Jigsaw | `ghcr.io/nodebytehosting/java:java_16j9` |
+| 17 | Supported | HotSpot | `ghcr.io/nodebytehosting/java:java_17` |
+| 19 | Supported | HotSpot | `ghcr.io/nodebytehosting/java:java_19` |
+| 21 | LTS | HotSpot | `ghcr.io/nodebytehosting/java:java_21` |
+| 22 | Supported | HotSpot | `ghcr.io/nodebytehosting/java:java_22` |
+| 25 | Latest | HotSpot | `ghcr.io/nodebytehosting/java:java_25` |
+| 26 | Latest LTS | HotSpot | `ghcr.io/nodebytehosting/java:java_26` |
 
 ## Files
 
-- `25/Dockerfile` - Java 25 JDK with development tools
+- `[version]/Dockerfile` - Java JDK with development tools for specified version
 - `entrypoint.sh` - Container entrypoint with STARTUP variable support
 - `README.md` - This file
 

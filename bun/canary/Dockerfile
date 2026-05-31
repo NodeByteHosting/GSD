@@ -20,37 +20,31 @@
 # SOFTWARE.
 #
 
-FROM        --platform=$TARGETOS/$TARGETARCH alpine:3.20
+FROM        --platform=$TARGETOS/$TARGETARCH oven/bun:canary
 
 LABEL       author="Tyler Hodgkin" maintainer="tyler.h@nodebyte.co.uk"
 
 LABEL       org.opencontainers.image.source="https://github.com/nodebytehosting/recipes"
-LABEL       org.opencontainers.image.description="Rust server dedicated container"
+LABEL       org.opencontainers.image.description="Bun latest runtime for containerized applications"
 LABEL       org.opencontainers.image.licenses=MIT
 LABEL       org.opencontainers.image.version="latest"
 
 RUN         apk add --update --no-cache \
-              bash \
               ca-certificates \
               curl \
-              libstdc++ \
-              libgcc \
-              node-npm \
-              node \
+              git \
+              make \
+              python3 \
               tzdata \
-              unzip \
             && adduser -D -h /home/container container
 
 USER        container
 ENV         USER=container HOME=/home/container
 WORKDIR     /home/container
 
-COPY        --chmod=755 --chown=container:container entrypoint.sh /home/container/entrypoint.sh
-COPY        --chmod=755 --chown=container:container wrapper.js /home/container/wrapper.js
+COPY        --chmod=755 --chown=root:root ../entrypoint.sh /entrypoint.sh
 
-EXPOSE      28015/udp 28016/tcp 8080/tcp
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
             CMD test -f /proc/1/cmdline || exit 1
 
-ENTRYPOINT  ["/home/container/entrypoint.sh"]
+ENTRYPOINT  ["/entrypoint.sh"]

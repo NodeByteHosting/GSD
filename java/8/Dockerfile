@@ -1,5 +1,7 @@
 #
-# Copyright (c) 2026 NodeByte LTD
+# MIT License
+#
+# Copyright (c) 2024 NodeByte Hosting
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,31 +22,39 @@
 # SOFTWARE.
 #
 
-FROM        --platform=$TARGETOS/$TARGETARCH oven/bun:1.1-alpine
+FROM        --platform=$TARGETOS/$TARGETARCH eclipse-temurin:8-jdk-noble
 
 LABEL       author="Tyler Hodgkin" maintainer="tyler.h@nodebyte.co.uk"
+LABEL       org.opencontainers.image.source="https://github.com/nodebytehosting/recipes" \
+            org.opencontainers.image.licenses="MIT"
 
-LABEL       org.opencontainers.image.source="https://github.com/nodebytehosting/recipes"
-LABEL       org.opencontainers.image.description="Bun 1.1 runtime for containerized applications"
-LABEL       org.opencontainers.image.licenses=MIT
-LABEL       org.opencontainers.image.version="1.1"
+RUN         apt update -y \
+            && apt install -y \
+                ca-certificates \
+                curl \
+                fontconfig \
+                git \
+                iproute2 \
+                jq \
+                libfreetype6 \
+                lsof \
+                openssl \
+                sqlite3 \
+                tar \
+                tini \
+                tzdata \
+                unzip \
+                zip
 
-RUN         apk add --update --no-cache \
-              ca-certificates \
-              curl \
-              git \
-              make \
-              python3 \
-              tzdata \
-            && adduser -D -h /home/container container
-
+## Setup user and working directory
+RUN         useradd -m -d /home/container -s /bin/bash container
 USER        container
 ENV         USER=container HOME=/home/container
 WORKDIR     /home/container
 
-COPY        --chmod=755 --chown=root:root ../entrypoint.sh /entrypoint.sh
+STOPSIGNAL SIGINT
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-            CMD test -f /proc/1/cmdline || exit 1
-
-ENTRYPOINT  ["/entrypoint.sh"]
+COPY        --chown=container:container ./../entrypoint.sh /entrypoint.sh
+RUN         chmod +x /entrypoint.sh
+ENTRYPOINT    ["/usr/bin/tini", "-g", "--"]
+CMD         ["/entrypoint.sh"]

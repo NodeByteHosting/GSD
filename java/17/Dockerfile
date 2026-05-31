@@ -1,5 +1,7 @@
 #
-# Copyright (c) 2026 NodeByte LTD
+# MIT License
+#
+# Copyright (c) 2024 NodeByte Hosting
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,37 +22,39 @@
 # SOFTWARE.
 #
 
-FROM        --platform=$TARGETOS/$TARGETARCH alpine:3.20
+FROM        --platform=$TARGETOS/$TARGETARCH eclipse-temurin:17-jdk-noble
 
 LABEL       author="Tyler Hodgkin" maintainer="tyler.h@nodebyte.co.uk"
+LABEL       org.opencontainers.image.source="https://github.com/nodebytehosting/recipes" \
+            org.opencontainers.image.licenses="MIT"
 
-LABEL       org.opencontainers.image.source="https://github.com/nodebytehosting/recipes"
-LABEL       org.opencontainers.image.description="Rust server dedicated container"
-LABEL       org.opencontainers.image.licenses=MIT
-LABEL       org.opencontainers.image.version="latest"
+RUN         apt update -y \
+            && apt install -y \
+                ca-certificates \
+                curl \
+                fontconfig \
+                git \
+                iproute2 \
+                jq \
+                libfreetype6 \
+                lsof \
+                openssl \
+                sqlite3 \
+                tar \
+                tini \
+                tzdata \
+                unzip \
+                zip
 
-RUN         apk add --update --no-cache \
-              bash \
-              ca-certificates \
-              curl \
-              libstdc++ \
-              libgcc \
-              node-npm \
-              node \
-              tzdata \
-              unzip \
-            && adduser -D -h /home/container container
-
+## Setup user and working directory
+RUN         useradd -m -d /home/container -s /bin/bash container
 USER        container
 ENV         USER=container HOME=/home/container
 WORKDIR     /home/container
 
-COPY        --chmod=755 --chown=container:container entrypoint.sh /home/container/entrypoint.sh
-COPY        --chmod=755 --chown=container:container wrapper.js /home/container/wrapper.js
+STOPSIGNAL SIGINT
 
-EXPOSE      28015/udp 28016/tcp 8080/tcp
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-            CMD test -f /proc/1/cmdline || exit 1
-
-ENTRYPOINT  ["/home/container/entrypoint.sh"]
+COPY        --chown=container:container ./../entrypoint.sh /entrypoint.sh
+RUN         chmod +x /entrypoint.sh
+ENTRYPOINT    ["/usr/bin/tini", "-g", "--"]
+CMD         ["/entrypoint.sh"]

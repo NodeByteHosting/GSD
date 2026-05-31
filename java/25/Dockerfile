@@ -1,5 +1,7 @@
 #
-# Copyright (c) 2026 NodeByte LTD
+# MIT License
+#
+# Copyright (c) 2024 NodeByte Hosting
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +25,36 @@
 FROM        --platform=$TARGETOS/$TARGETARCH eclipse-temurin:25-jdk
 
 LABEL       author="Tyler Hodgkin" maintainer="tyler.h@nodebyte.co.uk"
+LABEL       org.opencontainers.image.source="https://github.com/nodebytehosting/recipes" \
+            org.opencontainers.image.licenses="MIT"
 
-LABEL       org.opencontainers.image.source="https://github.com/nodebytehosting/recipes"
-LABEL       org.opencontainers.image.licenses=MIT
+RUN         apt update -y \
+            && apt install -y \
+                ca-certificates \
+                curl \
+                fontconfig \
+                git \
+                iproute2 \
+                jq \
+                libfreetype6 \
+                lsof \
+                openssl \
+                sqlite3 \
+                tar \
+                tini \
+                tzdata \
+                unzip \
+                zip
 
-RUN 		apt-get update -y \
-				&& apt-get install -y lsof curl ca-certificates openssl git tar sqlite3 fontconfig libfreetype6 tzdata iproute2 libstdc++6 \
-				&& useradd -d /home/container -m container
-
+## Setup user and working directory
+RUN         useradd -m -d /home/container -s /bin/bash container
 USER        container
 ENV         USER=container HOME=/home/container
 WORKDIR     /home/container
 
-COPY        ./../entrypoint.sh /entrypoint.sh
+STOPSIGNAL SIGINT
 
-CMD         [ "/bin/bash", "/entrypoint.sh" ]
+COPY        --chown=container:container ./../entrypoint.sh /entrypoint.sh
+RUN         chmod +x /entrypoint.sh
+ENTRYPOINT    ["/usr/bin/tini", "-g", "--"]
+CMD         ["/entrypoint.sh"]

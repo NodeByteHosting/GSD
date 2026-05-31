@@ -14,6 +14,8 @@ When deploying a new game server or application, installers:
 
 - **Alpine 3.20** - Minimal, ~11MB uncompressed
 - **Debian Bookworm** - Full package support + 32-bit libraries, ~150MB uncompressed
+- **Ubuntu 22.04, 24.04, 25.10, 26.04** - Full package support, latest tools, amd64 only
+- **Java 8, 11, 17, 21, 25, 26** - Pre-installed JDK for Java app deployments
 
 ## Usage
 

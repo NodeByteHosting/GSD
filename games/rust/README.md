@@ -1,14 +1,14 @@
 # Rust Recipe
 
-Docker recipe for running Rust multiplayer servers. Includes steamcmd integration for automatic binary management and updates.
+Docker recipe for running Rust multiplayer servers. Based on Pterodactyl Yolks with improvements. Includes steamcmd integration for automatic server updates and Node.js wrapper for output filtering.
 
 ## Files
 
-- `Dockerfile` - Alpine 3.20 image with Rust server runtime
-- `start.sh` - Startup script with auto-update capability
-- `entrypoint.sh` - Container entrypoint
-- `api.js` - Node.js wrapper for RCON command execution
-- `.dockerignore` - Build context optimization
+- `Dockerfile` - Alpine 3.20 image with Rust server runtime and Node.js
+- `entrypoint.sh` - Container entrypoint with auto-update, framework support, and startup orchestration
+- `wrapper.js` - Node.js wrapper for output filtering and graceful shutdown
+- `recipe.json` - Pterodactyl egg configuration
+- `README.md` - This file
 
 ## Quick Start
 
@@ -16,10 +16,8 @@ Docker recipe for running Rust multiplayer servers. Includes steamcmd integratio
 
 ```bash
 docker run -it \
-  -e RUST_SERVER_NAME="NodeByte Hosting" \
-  -e RUST_SERVER_SEED=12345 \
-  -e RUST_SERVER_WORLDSIZE=3500 \
-  -e RUST_SERVER_MAXPLAYERS=50 \
+  -e STARTUP="./RustDedicated -batchmode -nographics -logFile -" \
+  -e AUTO_UPDATE=1 \
   -p 28015:28015/udp \
   -p 28016:28016/tcp \
   -p 8080:8080/tcp \
@@ -42,11 +40,8 @@ services:
       AUTO_UPDATE: 1
       RUST_SERVER_NAME: "NodeByte Hosting"
       RUST_SERVER_SEED: 12345
-      RUST_SERVER_WORLDSIZE: 3500
-      RUST_SERVER_MAXPLAYERS: 50
-      RUST_SERVER_TICKRATE: 30
-    volumes:
-      - rust_data:/home/container
+      STARTUP: "./RustDedicated -batchmode -nographics -logFile - -server.hostname 'My Server'"
+      FRAMEWORK: vanillaner
     restart: unless-stopped
 
 volumes:
@@ -58,42 +53,116 @@ volumes:
 ```bash
 docker build -t rust:latest games/rust/
 docker run -it rust:latest
+```\ndocker build -t rust:latest games/rust/
+docker run -it \
+  -e STARTUP="./RustDedicated -batchmode" \
+  rust:latest
 ```
 
 ## Configuration
 
-### Environment Variables
+### Required Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `STARTUP` | **Required** - The server startup command (e.g., `./RustDedicated -batchmode`) |
+
+### Server Options
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `AUTO_UPDATE` | 1 | Automatically download latest Rust server binaries on startup |
-| `RUST_SERVER_NAME` | Rust Server | Server name displayed in server browser |
-| `RUST_SERVER_DESCRIPTION` | - | Server description |
-| `RUST_SERVER_URL` | - | Server website URL |
-| `RUST_SERVER_HEADERIMAGE` | - | Server header image URL |
-| `RUST_SERVER_SEED` | Random | World seed (for deterministic world generation) |
-| `RUST_SERVER_WORLDSIZE` | 3500 | World size in meters (3500 = standard size) |
-| `RUST_SERVER_MAXPLAYERS` | 100 | Maximum player slots |
-| `RUST_SERVER_TICKRATE` | 30 | Server tick rate (higher = more responsive, more CPU) |
-| `RUST_SERVER_SAVEINTERVAL` | 300 | Auto-save interval in seconds |
-| `RUST_SERVER_WIPE_SAVE` | 0 | Wipe save data on startup (set to 1 to wipe) |
+| `AUTO_UPDATE` | 1 | Automatically download latest Rust server binaries on startup (0 to disable) |
+| `FRAMEWORK` | vanilla | Modding framework: `vanilla`, `oxide`, or `carbon` |
+| `OXIDE` | 0 | Legacy: set to 1 to enable Oxide (use `FRAMEWORK=oxide` instead) |
+| `TZ` | UTC | Timezone (e.g., America/New_York) |
+| `INTERNAL_IP` | auto-detected | Internal container IP (auto-detected via ip rout
+For Rust Server Startup Examples
 
-### Advanced Setup
-
-For more complex configurations (plugins, mods, RCON), mount a volume at `/home/container` and customize:
-
+Basic Vanilla Server:
 ```bash
-docker run -it \
-  -v /path/to/rust/data:/home/container \
-  -e AUTO_UPDATE=1 \
-  ghcr.io/nodebytehosting/games:rust
+STARTUP="./RustDedicated -batchmode -nographics -logFile -"
 ```
 
-## RCON Access
+With Configuration:
+```bash
+STARTUP="./RustDedicated \\
+  -batchmode \\
+  -nographics \\
+  -logFile - \\
+  -server.port 28015 \\
+  -server.queryport 28016 \\
+  -server.maxplayers 50 \\
+  -server.hostname 'My Rust Server' \\
+  -server.seed 12345 \\
+  -server.worldsize 3500"
+```
 
-The `api.js` file provides Node.js-based command execution via RCON protocol. Check server logs for RCON details.
+## Features
 
-## License
+### Auto-Update
+Set `AUTO_UPDATE=1` (default) to automatically download the latest Rust server binaries on startup using steamcmd.
+
+### Framework Support
+
+#### Vanilla (Default)
+```bash
+FRAMEWORK=vanilla
+# No modifications, pure Rust
+```
+
+#### Oxide Modding Framework
+```bash
+FRAMEWORK=oxide
+# or legacy
+OXIDE=1
+```
+Automatically downloads and installs uMod for Rust server modding.
+
+#### Carbon Framework
+```bash
+FRAMEWORK=carbon
+```
+Automatically downloads and installs Carbon, a modern Rust modding framework with C# support.
+
+### Output Filtering
+The `wrapper.js` Node.js script:
+- Filters duplicate "Loading Prefab Bundle" messages (reduces console spam)
+- Maintains `latest.log` for persistent console output
+- Handles graceful shutdown on SIGTERM/SIGINT
+- Supports console input (type `quit` to stop server)
+
+## How It Works
+
+1. **entrypoint.sh** runs on container startup:
+   - Sets `INTERNAL_IP` and `TZ` environment variables
+   - Runs `steamcmd` to update server binaries (if `AUTO_UPDATE=1`)
+   - Handles framework installation (Carbon/Oxide)
+   - Sets `LD_LIBRARY_PATH` for library compatibility
+   - Parses Pterodactyl-style variables in `STARTUP` (`{{VAR}}` → `${VAR}`)
+   - Launches `wrapper.js` with the startup command
+
+2. **wrapper.js** manages the Rust process:
+   - Executes the startup command
+   - Filters output to remove spam
+   - Logs to `latest.log`
+   - Handles shutdown signals gracefully
+   - Responds to console input (`quit` command)
+
+## Troubleshooting
+
+### Server won't start
+- Check `STARTUP` variable is set correctly
+- Verify steamcmd downloads completed (check logs)
+- Ensure `/home/container` has sufficient disk space (~10GB)
+
+### High CPU during startup
+- Rust loads prefab bundles on startup - this is normal
+- Server should stabilize once startup completes
+
+### Framework installation fails
+- Check internet connectivity
+- Verify `curl` and `unzip` are available
+- Check disk space
 
 MIT License - See LICENSE file for details
 

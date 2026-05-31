@@ -36,6 +36,7 @@ jobs:
           - rockstar/fivem
           - rockstar/redm
           - rust
+          - hytale
     
     steps:
       - name: Checkout code
