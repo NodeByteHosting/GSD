@@ -49,7 +49,7 @@ ENV         USER=container HOME=/home/container
 WORKDIR     /home/container
 
 COPY        --chmod=755 --chown=container:container entrypoint.sh /entrypoint.sh
-COPY        --chmod=755 --chown=container:container installers /home/container/installers
+COPY 		--chmod=755 --chown=container:container installers /app/installers
 
 EXPOSE      25565/tcp 25575/tcp
 
