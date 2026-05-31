@@ -20,7 +20,7 @@
 # SOFTWARE.
 #
 
-FROM        --platform=$TARGETOS/$TARGETARCH oven/bun:latest
+FROM        --platform=$TARGETOS/$TARGETARCH debian:bookworm-slim
 
 LABEL       author="Tyler Hodgkin" maintainer="tyler.h@nodebyte.co.uk"
 
@@ -29,14 +29,17 @@ LABEL       org.opencontainers.image.description="Bun latest runtime for contain
 LABEL       org.opencontainers.image.licenses=MIT
 LABEL       org.opencontainers.image.version="latest"
 
-RUN         apk add --update --no-cache \
+RUN         apt-get update && apt-get install -y --no-install-recommends \
               ca-certificates \
               curl \
               git \
               make \
-              python3 \
+              nodejs \
+              npm \
               tzdata \
-            && adduser -D -h /home/container container
+            && npm install -g bun \
+            && useradd -d /home/container -s /bin/bash -m container \
+            && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 USER        container
 ENV         USER=container HOME=/home/container
