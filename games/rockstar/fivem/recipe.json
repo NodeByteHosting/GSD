@@ -14,7 +14,7 @@
     "file_denylist": [],
     "startup": "/home/container/entrypoint.sh",
     "config": {
-        "files": "{\r\n    \"server.cfg\": {\r\n        \"parser\": \"file\",\r\n        \"find\": {\r\n            \"endpoint_add_tcp\": \"endpoint_add_tcp \\\"0.0.0.0:{{server.build.default.port}}\\\"\",\r\n            \"endpoint_add_udp\": \"endpoint_add_udp \\\"0.0.0.0:{{server.build.default.port}}\\\"\",\r\n            \"sv_hostname\": \"sv_hostname \\\"{{server.build.env.SERVER_HOSTNAME}}\\\"\",\r\n            \"set sv_licenseKey\": \"set sv_licenseKey {{server.build.env.FIVEM_LICENSE}}\",\r\n            \"set steam_webApiKey\": \"set steam_webApiKey {{server.build.env.STEAM_WEBAPIKEY}}\",\r\n            \"sv_maxclients\": \"sv_maxclients {{server.build.env.MAX_PLAYERS}}\"\r\n        }\r\n    }\r\n}",
+        "files": "{\r\n    \"server.cfg\": {\r\n        \"parser\": \"file\",\r\n        \"find\": {\r\n            \"endpoint_add_tcp\": \"endpoint_add_tcp \\\"0.0.0.0:{{server.build.default.port}}\\\"\",\r\n            \"endpoint_add_udp\": \"endpoint_add_udp \\\"0.0.0.0:{{server.build.default.port}}\\\"\",\r\n            \"sv_hostname\": \"sv_hostname \\\"{{server.build.env.SERVER_HOSTNAME}}\\\"\",\r\n            \"set sv_licenseKey\": \"set sv_licenseKey {{server.build.env.FIVEM_LICENSE}}\",\r\n            \"set steam_webApiKey\": \"set steam_webApiKey {{server.build.env.STEAM_WEBAPIKEY}}\",\r\n            \"sv_maxclients\": \"sv_maxclients {{server.build.env.MAX_PLAYERS}}\",\r\n            \"set onesync\": \"set onesync {{server.build.env.ONESYNC_ENABLED}}\",\r\n            \"set sv_enforceGameBuild\": \"set sv_enforceGameBuild {{server.build.env.SV_GAMEBUILD}}\"\r\n        }\r\n    }\r\n}",
         "startup": "{\r\n    \"done\": \"succeeded. Welcome!\"\r\n}",
         "logs": "{}",
         "stop": "quit"
@@ -135,6 +135,46 @@
             "user_viewable": false,
             "user_editable": false,
             "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Port",
+            "description": "The game server port (UDP). Default 30120",
+            "env_variable": "SERVER_PORT",
+            "default_value": "30120",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:5",
+            "field_type": "text"
+        },
+        {
+            "name": "Auto Update",
+            "description": "Automatically download and extract the latest FiveM server on startup. Set to 1 to enable",
+            "env_variable": "AUTO_UPDATE",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "OneSync Enabled",
+            "description": "Enable or disable OneSync. Set to 'on', 'off', or 'legacy' (not recommended)",
+            "env_variable": "ONESYNC_ENABLED",
+            "default_value": "on",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|in:on,off,legacy",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Game Build",
+            "description": "The GTA client build version. See https:\\/\\/docs.fivem.net\\/docs\\/server-manual\\/server-commands\\/#sv_enforcegamebuild",
+            "env_variable": "SV_GAMEBUILD",
+            "default_value": "2944",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:4",
             "field_type": "text"
         }
     ]

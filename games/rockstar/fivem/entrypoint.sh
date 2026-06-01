@@ -32,10 +32,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-echo "${GREEN}[STARTUP]${NC} FiveM Server Starting"
-
-# Export internal IP for FiveM
-export INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}' 2>/dev/null || echo "127.0.0.1")
+Text="${GREEN}[STARTUP]${NC}"
 
 # Set environment defaults
 export TXHOST_GAME_NAME=${TXHOST_GAME_NAME:-"fivem"}
@@ -43,50 +40,97 @@ export TXHOST_DATA_PATH=${TXHOST_DATA_PATH:-"/home/container/txData"}
 export TXHOST_INTERFACE=${TXHOST_INTERFACE:-"0.0.0.0"}
 export TXHOST_TXA_PORT=${TXHOST_TXA_PORT:-"${TXADMIN_PORT:-40120}"}
 export TXHOST_FXS_PORT=${TXHOST_FXS_PORT:-"${SERVER_PORT:-30120}"}
+export TXHOST_DEFAULT_CFXKEY=${TXHOST_DEFAULT_CFXKEY:-"${FIVEM_LICENSE}"}
+export TXHOST_MAX_SLOTS=${TXHOST_MAX_SLOTS:-"${MAX_PLAYERS}"}
+export TXHOST_PROVIDER_NAME=${TXHOST_PROVIDER_NAME:-"${PROVIDER_NAME:-NodeByte Hosting}"}
+export TXHOST_PROVIDER_LOGO=${TXHOST_PROVIDER_LOGO:-"${PROVIDER_LOGO}"}
+export TXHOST_QUIET_MODE=${TXHOST_QUIET_MODE:-"false"}
 
-echo "${GREEN}[STARTUP]${NC} ${BLUE}Validating configuration...${NC}"
+# Export internal IP for FiveM
+export INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}' 2>/dev/null || echo "127.0.0.1")
+
+echo -e "${Text} ${BLUE}Validating configuration...${NC}"
 
 # Validate license key
-if [ -z "${FIVEM_LICENSE}" ]; then
-    echo "${GREEN}[STARTUP]${NC} ${YELLOW}Warning: No FiveM license key provided. Set FIVEM_LICENSE${NC}"
+if [ -z "$TXHOST_DEFAULT_CFXKEY" ]; then
+    echo -e "${Text} ${YELLOW}Warning: No FiveM license key provided. Set FIVEM_LICENSE or TXHOST_DEFAULT_CFXKEY${NC}"
 fi
 
 # Validate port conflicts
-if [ "${TXHOST_TXA_PORT}" = "30120" ]; then
-    echo "${RED}[ERROR] TXHOST_TXA_PORT cannot be 30120 (reserved for FXServer)${NC}"
+if [ "$TXHOST_TXA_PORT" = "30120" ] 2>/dev/null; then
+    echo -e "${RED}[ERROR] TXHOST_TXA_PORT cannot be 30120${NC}"
     exit 1
 fi
 
-if [ "${TXHOST_FXS_PORT}" = "40120" ]; then
-    echo "${RED}[ERROR] TXHOST_FXS_PORT cannot be 40120 (reserved for txAdmin)${NC}"
+if [ "$TXHOST_FXS_PORT" = "40120" ] 2>/dev/null; then
+    echo -e "${RED}[ERROR] TXHOST_FXS_PORT cannot be 40120${NC}"
     exit 1
 fi
 
-echo "${GREEN}[STARTUP]${NC} ${GREEN}Configuration validated${NC}"
-echo "${GREEN}[STARTUP]${NC} Game: ${TXHOST_GAME_NAME}"
-echo "${GREEN}[STARTUP]${NC} txAdmin Port: ${TXHOST_TXA_PORT}"
-echo "${GREEN}[STARTUP]${NC} Server Port: ${TXHOST_FXS_PORT}"
+echo -e "${Text} ${GREEN}Configuration validated${NC}"
+echo -e "${Text} Game: ${TXHOST_GAME_NAME}"
+echo -e "${Text} txAdmin Port: ${TXHOST_TXA_PORT}"
+echo -e "${Text} Server Port: ${TXHOST_FXS_PORT}"
+echo -e "${Text} Max Slots: ${TXHOST_MAX_SLOTS:-unlimited}"
 
-# Check for auto-updates if enabled
+# Auto-update check and download
 if [ "${AUTO_UPDATE}" = "1" ]; then
-    echo "${GREEN}[STARTUP]${NC} ${BLUE}Checking for server updates...${NC}"
-    CHANGELOGS=$(curl -sSL https://changelogs-live.fivem.net/api/changelog/versions/linux/server 2>/dev/null || echo "")
-    if [ -n "${CHANGELOGS}" ]; then
-        LATEST=$(echo "${CHANGELOGS}" | grep -o '"latest_download":"[^"]*"' | cut -d'"' -f4 2>/dev/null || echo "")
-        if [ -n "${LATEST}" ] && [ -d "./alpine/opt/cfx-server" ]; then
-            echo "${GREEN}[STARTUP]${NC} Update check passed"
+    echo -e "${Text} ${BLUE}Checking for updates...${NC}"
+    
+    CFX_CHANGELOGS=$(curl -sSL https://changelogs-live.fivem.net/api/changelog/versions/linux/server 2>/dev/null)
+    
+    if [ $? -eq 0 ] && [ -n "$CFX_CHANGELOGS" ]; then
+        DOWNLOAD_LINK=$(echo "$CFX_CHANGELOGS" | grep -o '"latest_download":"[^"]*"' | cut -d'"' -f4 2>/dev/null)
+        
+        if [ -n "$DOWNLOAD_LINK" ] && [ "$DOWNLOAD_LINK" != "null" ]; then
+            rm -rf /home/container/alpine > /dev/null 2>&1
+
+            echo -e "${Text} ${BLUE}Downloading latest CitizenFX Resources...${NC}"
+
+            curl -sSL "${DOWNLOAD_LINK}" -o "${DOWNLOAD_LINK##*/}" > /dev/null 2>&1
+            tar -xf "${DOWNLOAD_LINK##*/}" > /dev/null 2>&1
+            rm -rf "${DOWNLOAD_LINK##*/}" run.sh > /dev/null 2>&1
+
+            echo -e "${Text} ${GREEN}CitizenFX Resources updated successfully!${NC}"
+        else
+            echo -e "${Text} ${YELLOW}Could not determine latest download link${NC}"
         fi
+    else
+        echo -e "${Text} ${YELLOW}Update check failed (network or API issue)${NC}"
     fi
+else 
+    echo -e "${Text} ${BLUE}Auto Update is disabled (set AUTO_UPDATE=1 to enable)${NC}"
 fi
 
-echo "${GREEN}[STARTUP]${NC} ${GREEN}Starting FXServer...${NC}"
+echo -e "${Text} ${BLUE}Starting FiveM Server...${NC}"
 
-# Execute FiveM server directly (startup command from Pterodactyl egg)
-exec $(pwd)/alpine/opt/cfx-server/ld-musl-x86_64.so.1 \
-    --library-path "$(pwd)/alpine/usr/lib/v8/:$(pwd)/alpine/lib/:$(pwd)/alpine/usr/lib/" \
-    -- $(pwd)/alpine/opt/cfx-server/FXServer \
-    +set citizen_dir $(pwd)/alpine/opt/cfx-server/citizen/ \
+SERVER_BIN_PATH="$(pwd)/alpine/opt/cfx-server/FXServer"
+LD_PATH="$(pwd)/alpine/opt/cfx-server/ld-musl-x86_64.so.1"
+
+# Validate binary paths
+if [ ! -f "$SERVER_BIN_PATH" ]; then
+    echo -e "${RED}[ERROR] FiveM server binary not found at ${SERVER_BIN_PATH}${NC}"
+    exit 1
+fi
+
+if [ ! -f "$LD_PATH" ]; then
+    echo -e "${RED}[ERROR] Loader not found at ${LD_PATH}${NC}"
+    exit 1
+fi
+
+# Set txAdmin args based on TXADMIN_ENABLE
+if [ "$TXADMIN_ENABLE" = "1" ]; then
+    TXADMIN_ARGS="+start_txadmin"
+else
+    TXADMIN_ARGS="+exec server.cfg"
+fi
+
+# Execute FiveM server
+exec "$LD_PATH" \
+    --library-path "$(pwd)/alpine/usr/lib/v8/:$(pwd)/alpine/lib/:$(pwd)/alpine/usr/lib/:$(pwd)/alpine/opt/cfx-server/lib/" \
+    -- "$SERVER_BIN_PATH" \
+    +set citizen_dir "$(pwd)/alpine/opt/cfx-server/citizen/" \
     +set sv_licenseKey ${FIVEM_LICENSE} \
     +set steam_webApiKey ${STEAM_WEBAPIKEY} \
     +set sv_maxplayers ${MAX_PLAYERS} \
-    $( [ "${TXADMIN_ENABLE}" = "1" ] && printf %s '+start_txadmin' || printf %s '+exec server.cfg' )
+    $TXADMIN_ARGS
