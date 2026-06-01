@@ -1,4 +1,5 @@
 {
+    "_comment": "FiveM Pterodactyl Egg - NodeByte Hosting",
     "meta": {
         "version": "PTDL_v2",
         "update_url": null
@@ -6,30 +7,30 @@
     "exported_at": "2026-06-01T00:00:00+00:00",
     "name": "FiveM",
     "author": "NodeByteHosting",
-    "description": "FiveM server with txAdmin.",
-    "features": null,
+    "description": "FiveM server with txAdmin support",
+    "features": [],
     "docker_images": {
-        "ghcr.io\/nodebytehosting\/games:fivem-dev": "ghcr.io\/nodebytehosting\/games:fivem-dev"
+        "ghcr.io/nodebytehosting/games:fivem-dev": "ghcr.io/nodebytehosting/games:fivem-dev"
     },
     "file_denylist": [],
     "startup": "/home/container/entrypoint.sh",
     "config": {
-        "files": "{\r\n    \"server.cfg\": {\r\n        \"parser\": \"file\",\r\n        \"find\": {\r\n            \"endpoint_add_tcp\": \"endpoint_add_tcp \\\"0.0.0.0:{{server.build.default.port}}\\\"\",\r\n            \"endpoint_add_udp\": \"endpoint_add_udp \\\"0.0.0.0:{{server.build.default.port}}\\\"\",\r\n            \"sv_hostname\": \"sv_hostname \\\"{{server.build.env.SERVER_HOSTNAME}}\\\"\",\r\n            \"set sv_licenseKey\": \"set sv_licenseKey {{server.build.env.FIVEM_LICENSE}}\",\r\n            \"set steam_webApiKey\": \"set steam_webApiKey {{server.build.env.STEAM_WEBAPIKEY}}\",\r\n            \"sv_maxclients\": \"sv_maxclients {{server.build.env.MAX_PLAYERS}}\",\r\n            \"set onesync\": \"set onesync {{server.build.env.ONESYNC_ENABLED}}\",\r\n            \"set sv_enforceGameBuild\": \"set sv_enforceGameBuild {{server.build.env.SV_GAMEBUILD}}\"\r\n        }\r\n    }\r\n}",
+        "files": "{\r\n    \"server.cfg\": {\r\n        \"parser\": \"file\",\r\n        \"find\": {\r\n            \"endpoint_add_tcp\": \"endpoint_add_tcp \\\"0.0.0.0:{{server.build.default.port}}\\\"\",\r\n            \"endpoint_add_udp\": \"endpoint_add_udp \\\"0.0.0.0:{{server.build.default.port}}\\\"\",\r\n            \"sv_hostname\": \"sv_hostname \\\"{{server.build.env.SERVER_HOSTNAME}}\\\"\",\r\n            \"set sv_licenseKey\": \"set sv_licenseKey {{server.build.env.FIVEM_LICENSE}}\",\r\n            \"set steam_webApiKey\": \"set steam_webApiKey {{server.build.env.STEAM_WEBAPIKEY}}\",\r\n            \"sv_maxclients\": \"sv_maxclients {{server.build.env.MAX_PLAYERS}}\",\r\n            \"sets sv_projectName\": \"sets sv_projectName \\\"{{server.build.env.SERVER_PNAME}}\\\"\",\r\n            \"sets sv_projectDesc\": \"sets sv_projectDesc \\\"{{server.build.env.SERVER_PDESC}}\\\"\"\r\n        }\r\n    }\r\n}",
         "startup": "{\r\n    \"done\": \"succeeded. Welcome!\"\r\n}",
         "logs": "{}",
-        "stop": "quit"
+        "stop": "^SIGTERM"
     },
     "scripts": {
         "installation": {
-            "script": "#!\\/bin\\/bash\r\n# FiveM Installation Script\r\n#\r\n# Server Files: \\/mnt\\/server\r\napt update -y\r\napt install -y tar xz-utils file jq git\r\n\r\nmkdir -p \\/mnt\\/server\\/resources\r\n\r\ncd \\/mnt\\/server\r\n\r\necho \"updating citizenfx resource files\"\r\ngit clone https:\\/\\/github.com\\/citizenfx\\/cfx-server-data.git \\/tmp\r\ncp -Rf \\/tmp\\/resources\\/* resources\\/\r\n\r\nRELEASE_PAGE=$(curl -sSL https:\\/\\/runtime.fivem.net\\/artifacts\\/fivem\\/build_proot_linux\\/master\\/)\r\nCHANGELOGS_PAGE=$(curl -sSL https:\\/\\/changelogs-live.fivem.net\\/api\\/changelog\\/versions\\/linux\\/server)\r\n\r\nif [[ \"${FIVEM_VERSION}\" == \"recommended\" ]] || [[ -z ${FIVEM_VERSION} ]]; then\r\n  DOWNLOAD_LINK=$(echo $CHANGELOGS_PAGE | jq -r '.recommended_download')\r\nelif [[ \"${FIVEM_VERSION}\" == \"latest\" ]]; then\r\n  DOWNLOAD_LINK=$(echo $CHANGELOGS_PAGE | jq -r '.latest_download')\r\nelse\r\n  VERSION_LINK=$(echo -e \"${RELEASE_PAGE}\" | grep -Eo '\\\".*\\/*.tar.xz\\\"' | grep -Eo '\\\".*\\/*.tar.xz\\\"' | sed 's\\\\\\\"\\\\\\/\\/g' | sed 's\\\\.\\\\\\\\\\\\\\/\\\\\\/\\\\\\/1' | grep -i \"${FIVEM_VERSION}\" | grep -o =.* | tr -d '=')\r\n  if [[ \"${VERSION_LINK}\" == \"\" ]]; then\r\n    echo -e \"defaulting to recommended as the version requested was invalid.\"\r\n    DOWNLOAD_LINK=$(echo $CHANGELOGS_PAGE | jq -r '.recommended_download')\r\n  else\r\n    DOWNLOAD_LINK=$(echo https:\\/\\/runtime.fivem.net\\/artifacts\\/fivem\\/build_proot_linux\\/master\/${VERSION_LINK})\r\n  fi\r\nfi\r\n\r\nif [ ! -z \"${DOWNLOAD_URL}\" ]; then\r\n  if curl --output \\/dev\\/null --silent --head --fail ${DOWNLOAD_URL}; then\r\n    echo -e \"link is valid. setting download link to ${DOWNLOAD_URL}\"\r\n    DOWNLOAD_LINK=${DOWNLOAD_URL}\r\n  else\r\n    echo -e \"link is invalid closing out\"\r\n    exit 2\r\n  fi\r\nfi\r\n\r\necho -e \"Running curl -sSL ${DOWNLOAD_LINK} -o ${DOWNLOAD_LINK##*\\/}\"\r\n\r\ncurl -sSL ${DOWNLOAD_LINK} -o ${DOWNLOAD_LINK##*\\/}\r\n\r\necho \"Extracting fivem files\"\r\n\r\nFILETYPE=$(file -F ',' ${DOWNLOAD_LINK##*\\/} | cut -d',' -f2 | cut -d' ' -f2)\r\nif [ \"$FILETYPE\" == \"gzip\" ]; then\r\n  tar xzvf ${DOWNLOAD_LINK##*\\/}\r\nelif [ \"$FILETYPE\" == \"Zip\" ]; then\r\n  unzip ${DOWNLOAD_LINK##*\\/}\r\nelif [ \"$FILETYPE\" == \"XZ\" ]; then\r\n  tar xvf ${DOWNLOAD_LINK##*\\/}\r\nelse\r\n  echo -e \"unknown filetype. Exiting\"\r\n  exit 2\r\nfi\r\n\r\nrm -rf ${DOWNLOAD_LINK##*\\/} run.sh\r\n\r\nif [ -e server.cfg ]; then\r\n  echo \"Skipping downloading default server config file as one already exists\"\r\nelse\r\n  echo \"Downloading default fivem config\"\r\n  curl https:\\/\\/raw.githubusercontent.com\\/nodebytehosting\\/recipes\\/develop\\/games\\/rockstar\\/fivem\\/server.cfg >>server.cfg\r\nfi\r\n\r\nmkdir -p logs\\/\r\n\r\necho \"install complete\"",
-            "container": "ghcr.io\/nodebytehosting\/installers:debian",
+            "script": "#!/bin/bash\n# FiveM Installation Script\n#\n# Server Files: /mnt/server\napt update -y\napt install -y tar xz-utils curl git file jq unzip\n\nmkdir -p /mnt/server\ncd /mnt/server\n\nRELEASE_PAGE=$(curl -sSL https://runtime.fivem.net/artifacts/fivem/build_proot_linux/master/)\nCHANGELOGS_PAGE=$(curl -sSL https://changelogs-live.fivem.net/api/changelog/versions/linux/server)\n\n# Check whether to run installation or update version of script\nif [ ! -d \"./alpine/\" ] && [ ! -d \"./resources/\" ]; then\n  # Install script\n  echo \"Beginning installation of new FiveM server.\"\n\n  if [[ \"${FIVEM_VERSION}\" == \"recommended\" ]] || [[ -z ${FIVEM_VERSION} ]]; then\n    DOWNLOAD_LINK=$(echo $CHANGELOGS_PAGE | jq -r '.recommended_download')\n  elif [[ \"${FIVEM_VERSION}\" == \"latest\" ]]; then\n    DOWNLOAD_LINK=$(echo $CHANGELOGS_PAGE | jq -r '.latest_download')\n  else\n    VERSION_LINK=$(echo -e \"${RELEASE_PAGE}\" | grep -Eo '\".*/*.tar.xz\"' | grep -Eo '\".*/*.tar.xz\"' | sed 's/\\\\\\\"/\\\\\\\//g'  | sed 's/\\\\.\\\\\\\\/\\\\\\\//1' | grep -i \"${FIVEM_VERSION}\" | grep -o =.* |  tr -d '=')\n    if [[ \"${VERSION_LINK}\" == \"\" ]]; then\n      echo -e \"Defaulting to recommended as the version requested was invalid.\"\n      DOWNLOAD_LINK=$(echo $CHANGELOGS_PAGE | jq -r '.recommended_download')\n    else\n      DOWNLOAD_LINK=$(echo https://runtime.fivem.net/artifacts/fivem/build_proot_linux/master/${VERSION_LINK})\n    fi\n  fi\n\n  # Download artifact and get filetype\n  echo -e \"Running curl -sSL ${DOWNLOAD_LINK} -o ${DOWNLOAD_LINK##*/}...\"\n  curl -sSL ${DOWNLOAD_LINK} -o ${DOWNLOAD_LINK##*/}\n  \n  # Unpack artifact depending on filetype\n  echo \"Extracting FiveM FXServer artifact files...\"\n  FILETYPE=$(file -F ',' ${DOWNLOAD_LINK##*/} | cut -d',' -f2 | cut -d' ' -f2)\n  if [ \"$FILETYPE\" == \"gzip\" ]; then\n    tar xzvf ${DOWNLOAD_LINK##*/}\n  elif [ \"$FILETYPE\" == \"Zip\" ]; then\n    unzip ${DOWNLOAD_LINK##*/}\n  elif [ \"$FILETYPE\" == \"XZ\" ]; then\n    tar xvf ${DOWNLOAD_LINK##*/}\n  else\n    echo -e \"Downloaded artifact of unknown filetype. Exiting.\"\n    exit 2\n  fi\n\n  # Delete original bash launch script\n  rm -rf ${DOWNLOAD_LINK##*/} run.sh\n\n  if [ -e server.cfg ]; then\n    echo \"Server config file already exists. Skipping download of new one.\"\n  else\n    echo \"Downloading default FiveM server config...\"\n    curl -sSL https://raw.githubusercontent.com/nodebytehosting/recipes/develop/games/rockstar/fivem/server.cfg >> server.cfg\n  fi\n\n  # Clone resources repo from git or install FiveM default resources\n  if [ \"${GIT_ENABLED}\" == \"1\" ] && [ ! -d \"/mnt/server/resources\" ]; then\n    # Download from git\n    echo \"Preparing to clone resources repo from git.\";\n\n    if [[ ${GIT_REPOURL} != *.git ]]; then # Add .git at end of URL\n      GIT_REPOURL=${GIT_REPOURL}.git\n    fi\n\n    if [ -z \"${GIT_USERNAME}\" ] && [ -z \"${GIT_TOKEN}\" ]; then # Check for git username & token\n      echo -e \"Git Username or Git Token was not specified.\"\n    else\n      GIT_REPOURL=\"https://${GIT_USERNAME}:${GIT_TOKEN}@$(echo -e ${GIT_REPOURL} | cut -d/ -f3-)\"\n    fi\n\n    if [ -z ${GIT_BRANCH} ]; then\n      echo -e \"Cloning default branch into /resources/*.\"\n      git clone ${GIT_REPOURL} /mnt/server/resources\n    else\n      echo -e \"Cloning ${GIT_BRANCH} branch into /resources/*.\"\n      git clone --single-branch --branch ${GIT_BRANCH} ${GIT_REPOURL} /mnt/server/resources && echo \"Finished cloning into /resources/* from Git.\" || echo \"Failed cloning into /resources/* from Git.\"\n    fi\n\n  else\n    # Download FiveM default server resources\n    mkdir -p /mnt/server/resources\n    echo \"Preparing to clone default FiveM resources.\"\n    git clone https://github.com/citizenfx/cfx-server-data.git /tmp && echo \"Downloaded server from git.\" || echo \"Downloading from git failed.\"\n    cp -Rf /tmp/resources/* resources/\n  fi\n\n  mkdir -p logs/\n  echo \"Installation complete.\"\n\nelse\n  # Update script\n  echo \"Beginning update of existing FiveM FXServer server artifact.\"\n\n  # Delete old artifact\n  if [ -d \"./alpine/\" ]; then\n    echo \"Deleting old FXServer artifact...\"\n    rm -r ./alpine/\n    while [ -d \"./alpine/\" ]; do\n      sleep 1s\n    done\n    echo \"Deleted old FXServer artifact files successfully.\"\n  fi\n\n  if [[ \"${FIVEM_VERSION}\" == \"recommended\" ]] || [[ -z ${FIVEM_VERSION} ]]; then\n    DOWNLOAD_LINK=$(echo $CHANGELOGS_PAGE | jq -r '.recommended_download')\n  elif [[ \"${FIVEM_VERSION}\" == \"latest\" ]]; then\n    DOWNLOAD_LINK=$(echo $CHANGELOGS_PAGE | jq -r '.latest_download')\n  else\n    VERSION_LINK=$(echo -e \"${RELEASE_PAGE}\" | grep -Eo '\".*/*.tar.xz\"' | grep -Eo '\".*/*.tar.xz\"' | sed 's/\\\\\\\"/\\\\\\\//g'  | sed 's/\\\\.\\\\\\\\/\\\\\\\//1' | grep -i \"${FIVEM_VERSION}\" | grep -o =.* |  tr -d '=')\n    if [[ \"${VERSION_LINK}\" == \"\" ]]; then\n      echo -e \"Defaulting to recommended as the version requested was invalid.\"\n      DOWNLOAD_LINK=$(echo $CHANGELOGS_PAGE | jq -r '.recommended_download')\n    else\n      DOWNLOAD_LINK=$(echo https://runtime.fivem.net/artifacts/fivem/build_proot_linux/master/${VERSION_LINK})\n    fi\n  fi\n\n  # Download artifact and get filetype\n  echo -e \"Running curl -sSL ${DOWNLOAD_LINK} -o ${DOWNLOAD_LINK##*/}...\"\n  curl -sSL ${DOWNLOAD_LINK} -o ${DOWNLOAD_LINK##*/}\n\n  # Unpack artifact depending on filetype\n  echo \"Extracting FiveM FXServer artifact files...\"\n  FILETYPE=$(file -F ',' ${DOWNLOAD_LINK##*/} | cut -d',' -f2 | cut -d' ' -f2)\n  if [ \"$FILETYPE\" == \"gzip\" ]; then\n    tar xzvf ${DOWNLOAD_LINK##*/}\n  elif [ \"$FILETYPE\" == \"Zip\" ]; then\n    unzip ${DOWNLOAD_LINK##*/}\n  elif [ \"$FILETYPE\" == \"XZ\" ]; then\n    tar xvf ${DOWNLOAD_LINK##*/}\n  else\n    echo -e \"Downloaded artifact of unknown filetype. Exiting.\"\n    exit 2\n  fi\n\n  # Delete original bash launch script\n  rm -rf ${DOWNLOAD_LINK##*/} run.sh\n\n  echo \"Update complete.\"\n\nfi",
+            "container": "ghcr.io/nodebytehosting/installers:debian",
             "entrypoint": "bash"
         }
     },
     "variables": [
         {
-            "name": "fivem license",
-            "description": "Required to start the service. Get your keys at https:\\/\\/keymaster.fivem.net\\/",
+            "name": "CFX License Key",
+            "description": "Required to start the service. Get your keys at https://portal.cfx.re/",
             "env_variable": "FIVEM_LICENSE",
             "default_value": "",
             "user_viewable": true,
@@ -38,18 +39,8 @@
             "field_type": "text"
         },
         {
-            "name": "Server Hostname",
-            "description": "The name that shows up in the server browser",
-            "env_variable": "SERVER_HOSTNAME",
-            "default_value": "My new FXServer!",
-            "user_viewable": true,
-            "user_editable": true,
-            "rules": "required|string",
-            "field_type": "text"
-        },
-        {
             "name": "Steam Web Api Key",
-            "description": "Use your Steam WebApiKey or set to 'none'. Get your key at https:\\/\\/steamcommunity.com\\/dev\\/apikey\\/",
+            "description": "Use your Steam WebApiKey or set to 'none'. Get your key at https://steamcommunity.com/dev/apikey/.",
             "env_variable": "STEAM_WEBAPIKEY",
             "default_value": "none",
             "user_viewable": true,
@@ -58,48 +49,68 @@
             "field_type": "text"
         },
         {
-            "name": "Max Players",
-            "description": "Set the fivem max player count",
-            "env_variable": "MAX_PLAYERS",
-            "default_value": "48",
-            "user_viewable": true,
-            "user_editable": false,
-            "rules": "required|integer|between:1,48",
-            "field_type": "text"
-        },
-        {
-            "name": "fivem version",
-            "description": "The fivem version that is to be installed. Invalid versions will default to recommended.\r\n\r\nAn example is `6013-d8ae399d15680da569022f57ab7f2474d307c821`\r\n\r\nYou can get the latest version from here - https:\\/\\/runtime.fivem.net\\/artifacts\\/fivem\\/build_proot_linux\\/master\\/",
+            "name": "FXServer Version",
+            "description": "Downloads the latest or specified FiveM FXServer artifact.\n\nCan be set to 'latest', 'recommended', or a specific version.\n\nYou can find the latest version from here - https://runtime.fivem.net/artifacts/fivem/build_proot_linux/master/\n\nPressing 'Reinstall Server' in 'Settings' will remove the currently installed FXServer artifact and replace it with an updated one.",
             "env_variable": "FIVEM_VERSION",
-            "default_value": "recommended",
+            "default_value": "latest",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "required|string|max:50",
+            "rules": "nullable|string|max:50",
             "field_type": "text"
         },
         {
-            "name": "Download Link",
-            "description": "This is the link to download fivem from. This is only used in the install script.\r\n\r\nThe file you link to needs to be an fx.tar.xz file.\r\n\r\nExample:\r\nhttps:\\/\\/runtime.fivem.net\\/artifacts\\/fivem\\/build_proot_linux\\/master\\/6013-d8ae399d15680da569022f57ab7f2474d307c821\\/fx.tar.xz",
-            "env_variable": "DOWNLOAD_URL",
+            "name": "Git Enabled",
+            "description": "Enabling this will clone or pull the specified repository into /resources on each server startup. If you are installing the server now, this will clone the git repo.",
+            "env_variable": "GIT_ENABLED",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "Git Username",
+            "description": "The username used to authenticate with git.",
+            "env_variable": "GIT_USERNAME",
             "default_value": "",
-            "user_viewable": false,
-            "user_editable": false,
-            "rules": "string|nullable",
-            "field_type": "text"
-        },
-        {
-            "name": "txAdmin Port",
-            "description": "The port for the txAdmin panel",
-            "env_variable": "TXADMIN_PORT",
-            "default_value": "40120",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "required|string|max:20",
+            "rules": "nullable|string|max:39",
             "field_type": "text"
         },
         {
-            "name": "Enable txadmin",
-            "description": "Enables txadmin. Set to 1 to enable (default: 0 for false)",
+            "name": "Git Token",
+            "description": "The password used to authenticate with git.\n\nIt's best practice to use a Personal Access Token.\nhttps://github.com/settings/tokens\nhttps://gitlab.com/-/profile/personal_access_tokens",
+            "env_variable": "GIT_TOKEN",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Git Repository URL",
+            "description": "URL to Git repository.\n\nExample: https://github.com/citizenfx/cfx-server-data",
+            "env_variable": "GIT_REPOURL",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Git Branch",
+            "description": "The name of the branch you wish to use. The default will be used if this is not specified.",
+            "env_variable": "GIT_BRANCH",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Enable txAdmin",
+            "description": "Enables txAdmin.\n\n(default is off)",
             "env_variable": "TXADMIN_ENABLE",
             "default_value": "0",
             "user_viewable": true,
@@ -108,58 +119,68 @@
             "field_type": "text"
         },
         {
-            "name": "Tx Host Name",
-            "description": "",
-            "env_variable": "TXHOST_PROVIDER_NAME",
-            "default_value": "NodeByte Hosting",
-            "user_viewable": false,
-            "user_editable": false,
-            "rules": "required|string",
-            "field_type": "text"
-        },
-        {
-            "name": "Tx Logo",
-            "description": "",
-            "env_variable": "TXHOST_PROVIDER_LOGO",
-            "default_value": "https:\\/\\/panel.nodebyte.host\\/logos\\/FrontLogo.png",
-            "user_viewable": false,
-            "user_editable": false,
-            "rules": "string",
-            "field_type": "text"
-        },
-        {
-            "name": "Tx Game Name",
-            "description": "",
-            "env_variable": "TXHOST_GAME_NAME",
-            "default_value": "fivem",
-            "user_viewable": false,
-            "user_editable": false,
-            "rules": "required|string",
-            "field_type": "text"
-        },
-        {
-            "name": "Server Port",
-            "description": "The game server port (UDP). Default 30120",
-            "env_variable": "SERVER_PORT",
-            "default_value": "30120",
-            "user_viewable": false,
-            "user_editable": false,
+            "name": "txAdmin Port",
+            "description": "The port for the txAdmin panel.",
+            "env_variable": "TXADMIN_PORT",
+            "default_value": "40120",
+            "user_viewable": true,
+            "user_editable": true,
             "rules": "required|string|max:5",
             "field_type": "text"
         },
         {
-            "name": "Auto Update",
-            "description": "Automatically download and extract the latest FiveM server on startup. Set to 1 to enable",
-            "env_variable": "AUTO_UPDATE",
-            "default_value": "0",
+            "name": "FiveM Game Build",
+            "description": "Sets the sv_enforceGameBuild convar. This specifies the client GTA build the server should be on.\nRead docs for possible values: https://docs.fivem.net/docs/server-manual/server-commands/#sv_enforcegamebuild-build",
+            "env_variable": "SV_GAMEBUILD",
+            "default_value": "2944",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "required|boolean",
+            "rules": "required|string|max:4",
             "field_type": "text"
         },
         {
-            "name": "OneSync Enabled",
-            "description": "Enable or disable OneSync. Set to 'on', 'off', or 'legacy' (not recommended)",
+            "name": "Max Players",
+            "description": "Sets the maximum player count.",
+            "env_variable": "MAX_PLAYERS",
+            "default_value": "48",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|between:1,2048",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Hostname",
+            "description": "The name that shows up when selecting the server in the server browser.",
+            "env_variable": "SERVER_HOSTNAME",
+            "default_value": "My new FXServer!",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Project Name",
+            "description": "The name that shows up in the server browser.",
+            "env_variable": "SERVER_PNAME",
+            "default_value": "My Server Name",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Project Description",
+            "description": "The description that shows up in the server browser.",
+            "env_variable": "SERVER_PDESC",
+            "default_value": "Default project description. Please change me.",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Onesync",
+            "description": "Set to 'on' to enable Onesync. Set to 'off' if you want to disable Onesync. Optionally you can use 'legacy' however it is strongly advised against. If you are running a server you should have Onesync enabled.",
             "env_variable": "ONESYNC_ENABLED",
             "default_value": "on",
             "user_viewable": true,
@@ -168,13 +189,53 @@
             "field_type": "text"
         },
         {
-            "name": "Server Game Build",
-            "description": "The GTA client build version. See https:\\/\\/docs.fivem.net\\/docs\\/server-manual\\/server-commands\\/#sv_enforcegamebuild",
-            "env_variable": "SV_GAMEBUILD",
-            "default_value": "2944",
+            "name": "Use3dAudio",
+            "description": "Enable or disable 3d audio. Does nothing if 'UseNativeAudio' is set to true.",
+            "env_variable": "VOICE_USE3DAUDIO",
+            "default_value": "0",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "required|string|max:4",
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "UseSendingRangeOnly",
+            "description": "Use sending range only.",
+            "env_variable": "VOICE_USESENDINGRANGEONLY",
+            "default_value": "1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "UseNativeAudio",
+            "description": "Enable or disable Native audio. You should be using this for the best possible VOIP. Greatly superior to 'Use3dAudio'.",
+            "env_variable": "VOICE_USENATIVEAUDIO",
+            "default_value": "1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "txAdmin Data Path",
+            "description": "The location txAdmin stores data.",
+            "env_variable": "TXHOST_DATA_PATH",
+            "default_value": "/home/container/txData",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "txAdmin Game Name",
+            "description": "Restricts to only running either FiveM or RedM servers.\nThe setup page will only show recipes for the game specified below!\nOptions are: fivem or redm",
+            "env_variable": "TXHOST_GAME_NAME",
+            "default_value": "fivem",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|in:fivem,redm",
             "field_type": "text"
         }
     ]
