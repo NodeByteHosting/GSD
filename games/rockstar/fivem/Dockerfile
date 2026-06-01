@@ -50,7 +50,6 @@ ENV         TXHOST_DATA_PATH=/home/container/txData \
             TXADMIN_ENABLE=1 \
             AUTO_UPDATE=0
 
-COPY        --chmod=755 --chown=container:container start.sh /home/container/start.sh
 COPY        --chmod=755 --chown=container:container entrypoint.sh /home/container/entrypoint.sh
 
 EXPOSE      40120/tcp 30120/udp
