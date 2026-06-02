@@ -20,7 +20,9 @@
 # SOFTWARE.
 #
 
-FROM        --platform=$TARGETOS/$TARGETARCH alpine:3.20
+FROM       --platform=$TARGETOS/$TARGETARCH eclipse-temurin:25-jdk-alpine AS java25
+
+FROM        --platform=$TARGETOS/$TARGETARCH alpine:3.22
 
 LABEL       author="Rizon" maintainer="rizon@nodebyte.co.uk"
 
@@ -30,32 +32,39 @@ LABEL       org.opencontainers.image.licenses=MIT
 LABEL       org.opencontainers.image.version="latest"
 
 RUN         apk add --update --no-cache \
-              bash \
-              ca-certificates \
-              curl \
-              git \
-              jq \
-              openjdk8-jre \
-              openjdk11-jre \
-              openjdk17-jre \
-              openjdk21-jre \
-              tar \
-              tzdata \
-              wget \
-            && adduser -D -h /home/container container \
-			&& mkdir -p /home/container \
-			&& chown -R container:container /home/container
+				bash \
+				ca-certificates \
+				curl \
+				git \
+				jq \
+				openjdk8-jre \
+				openjdk11-jre \
+				openjdk17-jre \
+				openjdk21-jre \
+				tar \
+				tzdata \
+				wget
 
-USER        container
-ENV         USER=container HOME=/home/container
-WORKDIR     /home/container
+COPY --from=java25 /opt/java/openjdk /opt/java25
 
-COPY        --chmod=755 --chown=container:container entrypoint.sh /entrypoint.sh
-COPY 		--chmod=755 --chown=container:container installers /app/installers
+RUN addgroup -S container && \
+    adduser -S -G container container
+
+WORKDIR /app
+
+COPY --chown=container:container entrypoint.sh /app/entrypoint.sh
+COPY --chown=container:container installers /app/installers
+
+RUN chmod +x /app/entrypoint.sh && \
+	chmod +x /app/installers/*.sh
+
+USER container
+ENV USER=container \
+	HOME=/home/container
 
 EXPOSE      25565/tcp 25575/tcp
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
             CMD test -f /proc/1/cmdline || exit 1
 
-ENTRYPOINT  ["/entrypoint.sh"]
+ENTRYPOINT  ["/app/entrypoint.sh"]

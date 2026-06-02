@@ -2,12 +2,11 @@
 
 set -e
 
-mkdir -p /data
-cd /data
+cd "${HOME:-/home/container}"
 
 TYPE=$(echo "${TYPE:-PAPER}" | tr '[:lower:]' '[:upper:]')
 VERSION=${VERSION:-LATEST}
-JAVA_VERSION=${JAVA_VERSION:-21}
+JAVA_VERSION=${JAVA_VERSION:-25}
 MEMORY=${MEMORY:-2G}
 
 echo "Starting NodeByte Minecraft Runtime"
@@ -29,7 +28,7 @@ case $JAVA_VERSION in
         export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
     ;;
     25)
-        export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64
+        export JAVA_HOME=/opt/java25
     ;;
     *)
     echo "Unsupported Java version: $JAVA_VERSION"
@@ -37,7 +36,7 @@ case $JAVA_VERSION in
     ;;
 esac
 
-export PATH=$JAVA_HOME/bin:$PATH
+export PATH="$JAVA_HOME/bin:$PATH"
 
 java -version
 
