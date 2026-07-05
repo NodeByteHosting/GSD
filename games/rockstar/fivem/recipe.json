@@ -121,7 +121,7 @@
         {
             "name": "txAdmin Port",
             "description": "The port for the txAdmin panel.",
-            "env_variable": "TXADMIN_PORT",
+            "env_variable": "TXHOST_TXA_PORT",
             "default_value": "40120",
             "user_viewable": true,
             "user_editable": true,
