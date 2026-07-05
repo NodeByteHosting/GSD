@@ -65,6 +65,8 @@ USER container
 ENV USER=container \
 	HOME=/var/lib/nodebyte/game/data
 
+VOLUME ["/var/lib/nodebyte/game/data"]
+
 EXPOSE      25565/tcp 25575/tcp
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
