@@ -50,7 +50,10 @@ COPY --from=java25 /opt/java/openjdk /opt/java25
 RUN addgroup -S container && \
     adduser -S -G container container
 
-WORKDIR /app
+RUN mkdir -p /var/lib/nodebyte/game/data && \
+	chown -R container:container /var/lib/nodebyte
+
+WORKDIR /var/lib/nodebyte/game/data
 
 COPY --chown=container:container entrypoint.sh /app/entrypoint.sh
 COPY --chown=container:container installers /app/installers
@@ -60,7 +63,7 @@ RUN chmod +x /app/entrypoint.sh && \
 
 USER container
 ENV USER=container \
-	HOME=/home/container
+	HOME=/var/lib/nodebyte/game/data
 
 EXPOSE      25565/tcp 25575/tcp
 
