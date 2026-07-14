@@ -51,7 +51,7 @@ RUN addgroup -S container && \
     adduser -S -G container container
 
 RUN mkdir -p /var/lib/nodebyte/game/data && \
-	chown -R container:container /var/lib/nodebyte/data
+	chown -R container:container /var/lib/nodebyte/game/data
 
 WORKDIR /var/lib/nodebyte/game/data
 
