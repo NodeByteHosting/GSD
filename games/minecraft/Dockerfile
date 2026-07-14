@@ -47,8 +47,8 @@ RUN         apk add --update --no-cache \
 
 COPY --from=java25 /opt/java/openjdk /opt/java25
 
-RUN addgroup -S container && \
-    adduser -S -G container container
+RUN addgroup container && \
+    adduser -D -G container container
 
 RUN mkdir -p /var/lib/nodebyte/game/data && \
 	chown -R container:container /var/lib/nodebyte/game/data
