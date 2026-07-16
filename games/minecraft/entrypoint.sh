@@ -86,5 +86,4 @@ exec java \
     -XX:MaxGCPauseMillis=200 \
     -XX:+UnlockExperimentalVMOptions \
     -XX:+DisableExplicitGC \
-    -XX:+AlwaysPreTouch \
     -jar server.jar nogui
