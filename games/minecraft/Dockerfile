@@ -49,8 +49,8 @@ COPY --from=java25 /opt/java/openjdk /opt/java25
 
 WORKDIR /var/lib/nodebyte/game/data
 
-COPY --chown=container:container entrypoint.sh /app/entrypoint.sh
-COPY --chown=container:container installers /app/installers
+COPY entrypoint.sh /app/entrypoint.sh
+COPY installers /app/installers
 
 RUN chmod +x /app/entrypoint.sh && \
     chmod +x /app/installers/*.sh

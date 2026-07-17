@@ -2,7 +2,7 @@
 
 set -e
 
-cd "${HOME:-/home/container}"
+cd "${HOME:-/var/lib/nodebyte/game/data}"
 
 TYPE=$(echo "${TYPE:-PAPER}" | tr '[:lower:]' '[:upper:]')
 VERSION=${VERSION:-LATEST}
