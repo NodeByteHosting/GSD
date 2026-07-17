@@ -2,7 +2,9 @@
 
 set -e
 
-cd "${HOME:-/var/lib/nodebyte/game/data}"
+DATA_DIR="/var/lib/nodebyte/game/data"
+mkdir -p "$DATA_DIR"
+cd "$DATA_DIR"
 
 TYPE=$(echo "${TYPE:-PAPER}" | tr '[:lower:]' '[:upper:]')
 VERSION=${VERSION:-LATEST}
