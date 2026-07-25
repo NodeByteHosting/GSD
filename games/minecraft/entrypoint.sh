@@ -2,7 +2,9 @@
 
 set -e
 
-cd "${HOME:-/home/container}"
+DATA_DIR="/var/lib/nodebyte/game/data"
+mkdir -p "$DATA_DIR"
+cd "$DATA_DIR"
 
 TYPE=$(echo "${TYPE:-PAPER}" | tr '[:lower:]' '[:upper:]')
 VERSION=${VERSION:-LATEST}
@@ -86,5 +88,4 @@ exec java \
     -XX:MaxGCPauseMillis=200 \
     -XX:+UnlockExperimentalVMOptions \
     -XX:+DisableExplicitGC \
-    -XX:+AlwaysPreTouch \
     -jar server.jar nogui

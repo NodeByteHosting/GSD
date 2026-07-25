@@ -31,36 +31,31 @@ LABEL       org.opencontainers.image.description="Minecraft server with multiple
 LABEL       org.opencontainers.image.licenses=MIT
 LABEL       org.opencontainers.image.version="latest"
 
-RUN         apk add --update --no-cache \
-				bash \
-				ca-certificates \
-				curl \
-				git \
-				jq \
-				openjdk8-jre \
-				openjdk11-jre \
-				openjdk17-jre \
-				openjdk21-jre \
-				tar \
-				tzdata \
-				wget
+RUN apk add --update --no-cache \
+    bash \
+    ca-certificates \
+    curl \
+    git \
+    jq \
+    openjdk8-jre \
+    openjdk11-jre \
+    openjdk17-jre \
+    openjdk21-jre \
+    tar \
+    tzdata \
+    wget
 
 COPY --from=java25 /opt/java/openjdk /opt/java25
 
-RUN addgroup -S container && \
-    adduser -S -G container container
+WORKDIR /var/lib/nodebyte/game/data
 
-WORKDIR /app
-
-COPY --chown=container:container entrypoint.sh /app/entrypoint.sh
-COPY --chown=container:container installers /app/installers
+COPY entrypoint.sh /app/entrypoint.sh
+COPY installers /app/installers
 
 RUN chmod +x /app/entrypoint.sh && \
-	chmod +x /app/installers/*.sh
+    chmod +x /app/installers/*.sh
 
-USER container
-ENV USER=container \
-	HOME=/home/container
+VOLUME ["/var/lib/nodebyte/game/data"]
 
 EXPOSE      25565/tcp 25575/tcp
 
